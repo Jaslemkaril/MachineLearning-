@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Meter Electricity Forecast</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #060d1f;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.07) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.07) 0%, transparent 60%);
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+
+    .page-header p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-top: 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56,189,248,0.12);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 600px;
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(56,189,248,0.15);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field.full { grid-column: span 2; }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .val-badge {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56,189,248,0.1);
+      border-radius: 6px;
+      padding: 1px 8px;
+      min-width: 42px;
+      text-align: center;
+    }
+
+    /* Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 99px;
+      background: #1e293b;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      box-shadow: 0 0 8px rgba(56,189,248,0.5);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    /* Number input under slider */
+    .slider-input {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: #e2e8f0;
+      font-size: 0.88rem;
+      font-family: inherit;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .slider-input:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    /* Select dropdown for hour/day/month */
+    select {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      font-family: inherit;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus { outline: none; border-color: #38bdf8; }
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.05);
+      margin: 20px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.02em;
+      box-shadow: 0 8px 24px rgba(56,189,248,0.25);
+    }
+
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    /* Result */
+    .result {
+      margin-top: 24px;
+      border-radius: 16px;
+      overflow: hidden;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-inner {
+      background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .result-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .result-value {
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .result-unit {
+      font-size: 0.78rem;
+      color: #475569;
+      margin-bottom: 20px;
+    }
+
+    /* Gauge bar */
+    .gauge-wrap { margin-bottom: 14px; }
+
+    .gauge-bar-bg {
+      height: 10px;
+      border-radius: 99px;
+      background: #1e293b;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: #475569;
+    }
+
+    /* Level badge */
+    .level-badge {
+      display: inline-block;
+      padding: 4px 16px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .level-low    { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .level-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .level-high   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>⚡ Smart Meter Forecast</h1>
+    <p>Electricity Consumption Prediction · Linear Regression Model</p>
+  </div>
+
+  <div class="card">
+
+    <form method="POST">
+
+      <div class="section-title">Environmental Conditions</div>
+      <div class="grid">
+
+        <div class="field">
+          <div class="field-header">
+            <label>🌡 Temperature</label>
+            <span class="val-badge" id="temp-val">{{ request.form.get('temperature', '0.50') }}</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.01" aria-label="Temperature slider"
+            value="{{ request.form.get('temperature', '0.50') }}"
+            oninput="document.getElementById('temp-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('temperature').value=this.value"/>
+          <input class="slider-input" type="number" id="temperature" name="temperature" step="any" min="0" max="1" title="Temperature (0–1)" placeholder="e.g. 0.47"
+            value="{{ request.form.get('temperature', '0.50') }}" required
+            oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('temp-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label>💧 Humidity</label>
+            <span class="val-badge" id="hum-val">{{ request.form.get('humidity', '0.50') }}</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.01" aria-label="Humidity slider"
+            value="{{ request.form.get('humidity', '0.50') }}"
+            oninput="document.getElementById('hum-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('humidity').value=this.value"/>
+          <input class="slider-input" type="number" id="humidity" name="humidity" step="any" min="0" max="1" title="Humidity (0–1)" placeholder="e.g. 0.40"
+            value="{{ request.form.get('humidity', '0.50') }}" required
+            oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('hum-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label>🌬 Wind Speed</label>
+            <span class="val-badge" id="wind-val">{{ request.form.get('wind_speed', '0.50') }}</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.01" aria-label="Wind Speed slider"
+            value="{{ request.form.get('wind_speed', '0.50') }}"
+            oninput="document.getElementById('wind-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('wind_speed').value=this.value"/>
+          <input class="slider-input" type="number" id="wind_speed" name="wind_speed" step="any" min="0" max="1" title="Wind Speed (0–1)" placeholder="e.g. 0.45"
+            value="{{ request.form.get('wind_speed', '0.50') }}" required
+            oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('wind-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+        </div>
+
+        <div class="field">
+          <div class="field-header">
+            <label>🔋 Avg Past Consumption</label>
+            <span class="val-badge" id="apc-val">{{ request.form.get('avg_past_consumption', '0.50') }}</span>
+          </div>
+          <input type="range" min="0" max="1" step="0.01" aria-label="Avg Past Consumption slider"
+            value="{{ request.form.get('avg_past_consumption', '0.50') }}"
+            oninput="document.getElementById('apc-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('avg_past_consumption').value=this.value"/>
+          <input class="slider-input" type="number" id="avg_past_consumption" name="avg_past_consumption" step="any" min="0" max="1" title="Avg Past Consumption (0–1)" placeholder="e.g. 0.69"
+            value="{{ request.form.get('avg_past_consumption', '0.50') }}" required
+            oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('apc-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+        </div>
+
+      </div>
+
+      <div class="section-title">Time</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>🕐 Hour</label>
+          <select name="hour" aria-label="Hour">
+            {% for h in range(0, 24) %}
+            <option value="{{ h }}" {% if request.form.get('hour', '0')|int == h %}selected{% endif %}>
+              {{ '%02d:00' % h }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>📅 Day</label>
+          <select name="day" aria-label="Day">
+            {% for d in range(1, 32) %}
+            <option value="{{ d }}" {% if request.form.get('day', '1')|int == d %}selected{% endif %}>
+              Day {{ d }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>🗓 Month</label>
+          <select name="month" aria-label="Month">
+            {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+            {% for i in range(1, 13) %}
+            <option value="{{ i }}" {% if request.form.get('month', '1')|int == i %}selected{% endif %}>
+              {{ months[i-1] }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+      <button type="submit">⚡ Predict Consumption</button>
+    </form>
+
+    {% if prediction is not none %}
+    {% set pval = prediction | float %}
+    {% if pval < 0.4 %}
+      {% set level = 'Low' %}
+      {% set level_class = 'level-low' %}
+    {% elif pval < 0.7 %}
+      {% set level = 'Medium' %}
+      {% set level_class = 'level-medium' %}
+    {% else %}
+      {% set level = 'High' %}
+      {% set level_class = 'level-high' %}
+    {% endif %}
+
+    <div class="result">
+      <div class="result-inner">
+        <div class="result-label">Predicted Electricity Consumption</div>
+        <div class="result-value">{{ prediction }}</div>
+        <div class="result-unit">normalized units (0–1 scale)</div>
+
+        <div class="gauge-wrap">
+          <div class="gauge-bar-bg">
+            <div class="gauge-bar-fill" id="gauge-fill"></div>
+            <script>document.getElementById('gauge-fill').style.width='{{ (pval * 100) | round | int }}%';</script>
+          </div>
+          <div class="gauge-labels"><span>0 Low</span><span>0.5 Medium</span><span>1.0 High</span></div>
+        </div>
+
+        <span class="level-badge {{ level_class }}">{{ level }} Consumption</span>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+</body>
+</html>
