@@ -24,15 +24,15 @@ SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
               6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3}
 
 DORM_MAP = {"Dorm A": 0, "Dorm B": 1, "Dorm C": 2}
-ROOM_MAP = {f"Room {r}": i for i, r in enumerate(range(101, 111))}
+ROOM_MAP = {f"Room {r}": i for i, r in enumerate(range(101, 109))}
 
 ANOMALY_THRESHOLD = 0.75
 
 TOP_ROOMS = [
     {"dorm": "Dorm B", "room": "Room 104", "value": 0.91},
-    {"dorm": "Dorm A", "room": "Room 108", "value": 0.88},
+    {"dorm": "Dorm A", "room": "Room 107", "value": 0.88},
     {"dorm": "Dorm C", "room": "Room 102", "value": 0.85},
-    {"dorm": "Dorm B", "room": "Room 107", "value": 0.82},
+    {"dorm": "Dorm B", "room": "Room 106", "value": 0.82},
     {"dorm": "Dorm A", "room": "Room 103", "value": 0.79},
 ]
 

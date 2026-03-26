@@ -447,7 +447,7 @@
         <div class="field">
           <label>Room</label>
           <select name="room_id" aria-label="Room">
-            {% for r in range(101, 111) %}
+            {% for r in range(101, 109) %}
             <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 101') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
             {% endfor %}
           </select>

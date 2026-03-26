@@ -30,10 +30,10 @@ df['TimeOfDay']  = pd.cut(df['Hour'], bins=[-1,5,11,17,23],
 # Encode Anomaly_Label
 df['Is_Anomaly'] = (df['Anomaly_Label'] != 'Normal').astype(int)
 
-# Synthetic Dorm_ID and Room_ID (3 dorms, 10 rooms each)
+# Synthetic Dorm_ID and Room_ID (3 dorms, 8 rooms each)
 np.random.seed(42)
 df['Dorm_ID'] = np.random.randint(0, 3, size=len(df))
-df['Room_ID'] = np.random.randint(0, 10, size=len(df))
+df['Room_ID'] = np.random.randint(0, 8, size=len(df))
 
 # Define features and target
 feature_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Avg_Past_Consumption',
