@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Meter Electricity Forecast | Multiple Linear Regression</title>
+  <title>Smart Meter Electricity Forecast | Random Forest Regression</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -356,13 +356,32 @@
     .card-bottom { margin-top: 24px; }
     .section-title-gap { margin-top: 28px; }
     .chart-img { width: 100%; border-radius: 10px; margin-top: 8px; }
+
+    /* History table */
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 8px; }
+    .history-table th {
+      text-align: left; padding: 8px 10px;
+      color: #64748b; font-weight: 600; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid #1e293b;
+    }
+    .history-table td { padding: 9px 10px; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table .td-result { font-weight: 700; color: #38bdf8; }
+
+    /* About section */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+    .about-item { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; }
+    .about-item-label { font-size: 0.68rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 6px; }
+    .about-item-text { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
   </style>
 </head>
 <body>
 
   <div class="page-header">
     <h1>⚡ Smart Meter Forecast</h1>
-    <p>Electricity Consumption Prediction · Multiple Linear Regression Model</p>
+    <p>Electricity Consumption Prediction · {{ stats.model_type }}</p>
   </div>
 
   <div class="card">
@@ -530,9 +549,9 @@
       </div>
     </div>
 
-    <div class="section-title section-title-gap">Feature Coefficients</div>
+    <div class="section-title section-title-gap">Feature Importances</div>
     <div class="coeff-table">
-      {% for c in stats.coeffs %}
+      {% for c in stats.importances %}
       <div class="coeff-row">
         <span class="coeff-name">{{ c.feature }}</span>
         <div class="coeff-bar-wrap">
@@ -547,6 +566,60 @@
     <div class="section-title section-title-gap">Actual vs Predicted (First 100 Test Samples)</div>
     <img src="data:image/png;base64,{{ stats.chart }}" alt="Actual vs Predicted chart" class="chart-img"/>
 
+  </div>
+
+  <!-- Prediction History -->
+  {% if history %}
+  <div class="card card-bottom">
+    <div class="section-title">Recent Predictions</div>
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Temp</th>
+          <th>Humidity</th>
+          <th>Wind</th>
+          <th>Avg Past</th>
+          <th>Time</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr>
+          <td>{{ h.temp }}</td>
+          <td>{{ h.hum }}</td>
+          <td>{{ h.wind }}</td>
+          <td>{{ h.apc }}</td>
+          <td>{{ h.time }}</td>
+          <td class="td-result">{{ h.result }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- About Section -->
+  <div class="card card-bottom">
+    <div class="section-title">About This Project</div>
+    <div class="about-grid">
+      <div class="about-item">
+        <div class="about-item-label">Dataset</div>
+        <div class="about-item-text">5,000 smart meter readings at 30-minute intervals. Features include temperature, humidity, wind speed, and historical consumption, all normalized to a 0–1 scale.</div>
+      </div>
+      <div class="about-item">
+        <div class="about-item-label">Model</div>
+        <div class="about-item-text">{{ stats.model_type }} trained on 11 features. Time-based 70/30 train-test split preserves temporal integrity. Cross-validated with 5 folds.</div>
+      </div>
+      <div class="about-item">
+        <div class="about-item-label">Feature Engineering</div>
+        <div class="about-item-text">IsWeekend, Season (0-3), and TimeOfDay (night/morning/afternoon/evening) are automatically derived from your selected time inputs.</div>
+      </div>
+      <div class="about-item">
+        <div class="about-item-label">Metrics Guide</div>
+        <div class="about-item-text">MAE = average prediction error. RMSE = penalises large errors more. R² = proportion of variance explained (1.0 is perfect). CV R² = generalisation score.</div>
+      </div>
+    </div>
   </div>
 
 </body>
