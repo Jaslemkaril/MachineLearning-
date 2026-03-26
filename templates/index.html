@@ -13,47 +13,69 @@
       background: #060d1f;
       color: #e2e8f0;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background-image: radial-gradient(ellipse at 20% 20%, rgba(56,189,248,0.07) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.07) 0%, transparent 60%);
+      padding: 52px 20px 72px;
+      background-image:
+        radial-gradient(ellipse at 8% 8%, rgba(56,189,248,0.09) 0%, transparent 52%),
+        radial-gradient(ellipse at 92% 88%, rgba(99,102,241,0.09) 0%, transparent 52%);
     }
 
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    /* ── Page header ─────────────────────────────────────────── */
     .page-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 40px;
     }
 
     .page-header h1 {
-      font-size: 1.9rem;
+      font-size: 2.1rem;
       font-weight: 800;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      background: linear-gradient(135deg, #38bdf8 30%, #818cf8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
     }
 
     .page-header p {
       font-size: 0.82rem;
       color: #64748b;
-      margin-top: 6px;
+      margin-top: 8px;
       letter-spacing: 0.03em;
     }
 
+    .header-pills {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .header-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 99px;
+      padding: 4px 14px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
     .card {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56,189,248,0.12);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56,189,248,0.1);
       border-radius: 20px;
-      padding: 36px;
+      padding: 32px;
       width: 100%;
-      max-width: 600px;
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03);
+      margin-bottom: 20px;
     }
 
     .section-title {
@@ -75,11 +97,19 @@
       background: rgba(56,189,248,0.15);
     }
 
+    /* ── Grid ────────────────────────────────────────────────── */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
     }
 
     .field { display: flex; flex-direction: column; gap: 8px; }
@@ -136,39 +166,60 @@
 
     input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-    /* Number input under slider */
     .slider-input {
-      background: #0f172a;
+      background: #0c1628;
       border: 1px solid #1e293b;
       border-radius: 8px;
-      padding: 7px 12px;
+      padding: 7px 11px;
       color: #e2e8f0;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-family: inherit;
       width: 100%;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .slider-input:focus {
       outline: none;
-      border-color: #38bdf8;
+      border-color: rgba(56,189,248,0.5);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+
+    /* ── Select with custom arrow ──────────────────────────── */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #64748b;
+      pointer-events: none;
     }
 
     /* Select dropdown for hour/day/month */
     select {
-      background: #0f172a;
+      background: #0c1628;
       border: 1px solid #1e293b;
       border-radius: 8px;
-      padding: 9px 12px;
+      padding: 9px 34px 9px 12px;
       color: #e2e8f0;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-family: inherit;
       width: 100%;
       cursor: pointer;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
-    select:focus { outline: none; border-color: #38bdf8; }
+    select:focus {
+      outline: none;
+      border-color: rgba(56,189,248,0.5);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
 
     .divider {
       height: 1px;
@@ -178,54 +229,76 @@
 
     button {
       width: 100%;
-      padding: 15px;
+      padding: 14px;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       color: #fff;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.92rem;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      transition: opacity 0.2s, transform 0.15s;
-      letter-spacing: 0.02em;
-      box-shadow: 0 8px 24px rgba(56,189,248,0.25);
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 28px rgba(56,189,248,0.2);
     }
 
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:hover {
+      opacity: 0.88;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(56,189,248,0.32);
+    }
     button:active { transform: translateY(0); }
 
-    /* Result */
+    /* ── Result ───────────────────────────────────────────────── */
     .result {
       margin-top: 24px;
       border-radius: 16px;
       overflow: hidden;
-      animation: slideUp 0.4s ease;
+      animation: slideUp 0.35s ease;
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     .result-inner {
-      background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
-      border: 1px solid rgba(56,189,248,0.2);
       border-radius: 16px;
-      padding: 24px;
+      padding: 28px 24px;
       text-align: center;
     }
 
-    .result-label {
-      font-size: 0.72rem;
+    .result-inner.status-ok {
+      background: linear-gradient(135deg, rgba(34,197,94,0.07), rgba(56,189,248,0.07));
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+
+    .result-inner.status-warn {
+      background: linear-gradient(135deg, rgba(239,68,68,0.09), rgba(245,158,11,0.06));
+      border: 1px solid rgba(239,68,68,0.28);
+    }
+
+    .result-location {
+      font-size: 0.78rem;
       font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .result-label {
+      font-size: 0.68rem;
+      font-weight: 600;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .result-value {
-      font-size: 3rem;
+      font-size: 3.4rem;
       font-weight: 800;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
@@ -236,51 +309,52 @@
     }
 
     .result-unit {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #475569;
       margin-bottom: 20px;
     }
 
     /* Gauge bar */
-    .gauge-wrap { margin-bottom: 14px; }
+    .gauge-wrap { margin-bottom: 18px; }
 
     .gauge-bar-bg {
-      height: 10px;
+      height: 8px;
       border-radius: 99px;
       background: #1e293b;
       overflow: hidden;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .gauge-bar-fill {
       height: 100%;
       border-radius: 99px;
-      background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
-      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+      background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+      transition: width 0.9s cubic-bezier(.4,0,.2,1);
     }
 
     .gauge-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 0.65rem;
+      font-size: 0.63rem;
       color: #475569;
     }
 
-    /* Level badge */
-    .level-badge {
-      display: inline-block;
-      padding: 4px 16px;
+    /* Single status badge in result */
+    .result-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 22px;
       border-radius: 99px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       letter-spacing: 0.04em;
     }
 
-    .level-low    { background: rgba(34,197,94,0.15);  color: #22c55e; }
-    .level-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
-    .level-high   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+    .result-status.ok   { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+    .result-status.warn { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.28); }
 
-    /* Metrics grid */
+    /* ── Metrics grid ─────────────────────────────────────────── */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -288,24 +362,27 @@
     }
 
     .metric-box {
-      background: #0f172a;
+      background: #0c1628;
       border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 18px 12px 14px;
       text-align: center;
+      transition: border-color 0.2s;
     }
 
+    .metric-box:hover { border-color: rgba(56,189,248,0.25); }
+
     .metric-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
     }
 
     .metric-value {
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 800;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
@@ -314,121 +391,371 @@
     }
 
     .metric-sub {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: #475569;
-      margin-top: 4px;
+      margin-top: 5px;
+      line-height: 1.3;
     }
 
-    /* Coefficient table */
-    .coeff-table { display: flex; flex-direction: column; gap: 8px; }
+    /* ── Feature importances ─────────────────────────────────── */
+    .coeff-table { display: flex; flex-direction: column; gap: 9px; }
 
     .coeff-row {
       display: grid;
-      grid-template-columns: 160px 1fr 60px;
+      grid-template-columns: 155px 1fr 58px;
       align-items: center;
       gap: 12px;
     }
 
-    .coeff-name {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      font-weight: 500;
-    }
+    .coeff-name { font-size: 0.77rem; color: #94a3b8; font-weight: 500; }
 
-    .coeff-bar-wrap {
-      background: #1e293b;
-      border-radius: 99px;
-      height: 7px;
-      overflow: hidden;
-    }
-
-    .coeff-bar {
-      height: 100%;
-      border-radius: 99px;
-      min-width: 2px;
-    }
-
-    .coeff-val { font-size: 0.78rem; font-weight: 700; text-align: right; }
+    .coeff-bar-wrap { background: #1e293b; border-radius: 99px; height: 6px; overflow: hidden; }
+    .coeff-bar { height: 100%; border-radius: 99px; min-width: 2px; }
+    .coeff-val { font-size: 0.75rem; font-weight: 700; text-align: right; }
     .coeff-val.pos { color: #38bdf8; }
     .coeff-val.neg { color: #f87171; }
-    .coeff-bar-pos { background: #38bdf8; }
+    .coeff-bar-pos { background: linear-gradient(90deg, #38bdf8, #818cf8); }
     .coeff-bar-neg { background: #f87171; }
-    .card-bottom { margin-top: 24px; }
     .section-title-gap { margin-top: 28px; }
-    .chart-img { width: 100%; border-radius: 10px; margin-top: 8px; }
+    .chart-img { width: 100%; border-radius: 10px; margin-top: 10px; }
 
-    /* History table */
-    .history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 8px; }
-    .history-table th {
-      text-align: left; padding: 8px 10px;
-      color: #64748b; font-weight: 600; font-size: 0.68rem;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      border-bottom: 1px solid #1e293b;
-    }
-    .history-table td { padding: 9px 10px; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.04); }
-    .history-table tr:last-child td { border-bottom: none; }
-    .history-table .td-result { font-weight: 700; color: #38bdf8; }
+    /* ── History (card rows) ─────────────────────────────────── */
+    .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 
-    /* About section */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
-    .about-item { background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 14px; }
-    .about-item-label { font-size: 0.68rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;
-      letter-spacing: 0.08em; margin-bottom: 6px; }
-    .about-item-text { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
-
-    /* Result location header */
-    .result-location {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #e2e8f0;
-      margin-bottom: 6px;
-      letter-spacing: 0.01em;
-    }
-
-    /* Status row (level badge + anomaly badge) */
-    .status-row {
+    .history-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 14px;
+      justify-content: space-between;
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 16px;
+      gap: 14px;
       flex-wrap: wrap;
+      transition: border-color 0.2s;
     }
 
-    .status-badge {
+    .history-row:hover { border-color: rgba(56,189,248,0.2); }
+
+    .history-location {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      min-width: 110px;
+      line-height: 1.4;
+    }
+
+    .history-meta {
+      font-size: 0.74rem;
+      color: #64748b;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .history-result {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .history-status {
       display: inline-block;
-      padding: 4px 16px;
+      padding: 3px 12px;
       border-radius: 99px;
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.04em;
     }
 
-    .status-normal  { background: rgba(34,197,94,0.15);  color: #22c55e; }
-    .status-anomaly { background: rgba(239,68,68,0.15);  color: #ef4444; }
-
-    /* Top consuming rooms */
-    .top-rooms { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-    .top-room-row { display: grid; grid-template-columns: 180px 1fr 52px; align-items: center; gap: 12px; }
-    .top-room-info { display: flex; align-items: center; gap: 8px; }
-    .top-room-rank {
-      font-size: 0.72rem; font-weight: 800; color: #38bdf8;
-      background: rgba(56,189,248,0.1); border-radius: 6px; padding: 1px 7px;
-    }
-    .top-room-name { font-size: 0.82rem; color: #94a3b8; font-weight: 500; }
-    .top-room-bar-wrap { background: #1e293b; border-radius: 99px; height: 7px; overflow: hidden; }
-    .top-room-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #818cf8); min-width: 2px; }
-    .top-room-val { font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-align: right; }
+    .hs-normal  { background: rgba(34,197,94,0.12);  color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+    .hs-anomaly { background: rgba(239,68,68,0.12);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
   </style>
 </head>
 <body>
 
-  <div class="page-header">
-    <h1>Dorm &amp; Room Electricity Monitoring</h1>
-    <p>Forecasting System &nbsp;·&nbsp; Multiple Linear Regression &nbsp;·&nbsp; {{ stats.model_type }}</p>
+  <!-- ── Header ── -->
+  <div class="wrap">
+    <div class="page-header">
+      <h1>Dorm &amp; Room Electricity<br>Monitoring System</h1>
+      <p>Electricity Consumption Forecasting &nbsp;&middot;&nbsp; Multiple Linear Regression</p>
+      <div class="header-pills">
+        <span class="header-pill">3 Dorms</span>
+        <span class="header-pill">24 Rooms</span>
+        <span class="header-pill">ML Powered</span>
+        <span class="header-pill">{{ stats.model_type }}</span>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
+  <!-- ── Prediction Form ── -->
+  <div class="wrap">
+    <div class="card">
+      <form method="POST">
+
+        <div class="section-title">Location</div>
+        <div class="grid">
+          <div class="field">
+            <label>Dorm</label>
+            <div class="select-wrap">
+              <select name="dorm_id" aria-label="Dorm">
+                {% for d in ['Dorm A', 'Dorm B', 'Dorm C'] %}
+                <option value="{{ d }}" {% if request.form.get('dorm_id', 'Dorm A') == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Room</label>
+            <div class="select-wrap">
+              <select name="room_id" aria-label="Room">
+                {% for r in range(101, 109) %}
+                <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 101') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Environmental Conditions</div>
+        <div class="grid">
+
+          <div class="field">
+            <div class="field-header">
+              <label>Temperature</label>
+              <span class="val-badge" id="temp-val">{{ request.form.get('temperature', '0.50') }}</span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" aria-label="Temperature slider"
+              value="{{ request.form.get('temperature', '0.50') }}"
+              oninput="document.getElementById('temp-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('temperature').value=this.value"/>
+            <input class="slider-input" type="number" id="temperature" name="temperature" step="any" min="0" max="1" title="Temperature (0–1)" placeholder="e.g. 0.47"
+              value="{{ request.form.get('temperature', '0.50') }}" required
+              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('temp-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+          </div>
+
+          <div class="field">
+            <div class="field-header">
+              <label>Humidity</label>
+              <span class="val-badge" id="hum-val">{{ request.form.get('humidity', '0.50') }}</span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" aria-label="Humidity slider"
+              value="{{ request.form.get('humidity', '0.50') }}"
+              oninput="document.getElementById('hum-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('humidity').value=this.value"/>
+            <input class="slider-input" type="number" id="humidity" name="humidity" step="any" min="0" max="1" title="Humidity (0–1)" placeholder="e.g. 0.40"
+              value="{{ request.form.get('humidity', '0.50') }}" required
+              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('hum-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+          </div>
+
+          <div class="field">
+            <div class="field-header">
+              <label>Wind Speed</label>
+              <span class="val-badge" id="wind-val">{{ request.form.get('wind_speed', '0.50') }}</span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" aria-label="Wind Speed slider"
+              value="{{ request.form.get('wind_speed', '0.50') }}"
+              oninput="document.getElementById('wind-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('wind_speed').value=this.value"/>
+            <input class="slider-input" type="number" id="wind_speed" name="wind_speed" step="any" min="0" max="1" title="Wind Speed (0–1)" placeholder="e.g. 0.45"
+              value="{{ request.form.get('wind_speed', '0.50') }}" required
+              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('wind-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+          </div>
+
+          <div class="field">
+            <div class="field-header">
+              <label>Avg Past Consumption</label>
+              <span class="val-badge" id="apc-val">{{ request.form.get('avg_past_consumption', '0.50') }}</span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" aria-label="Avg Past Consumption slider"
+              value="{{ request.form.get('avg_past_consumption', '0.50') }}"
+              oninput="document.getElementById('apc-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('avg_past_consumption').value=this.value"/>
+            <input class="slider-input" type="number" id="avg_past_consumption" name="avg_past_consumption" step="any" min="0" max="1" title="Avg Past Consumption (0–1)" placeholder="e.g. 0.69"
+              value="{{ request.form.get('avg_past_consumption', '0.50') }}" required
+              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('apc-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+          </div>
+
+        </div>
+
+        <div class="section-title">Time</div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Hour</label>
+            <div class="select-wrap">
+              <select name="hour" aria-label="Hour">
+                {% for h in range(0, 24) %}
+                <option value="{{ h }}" {% if request.form.get('hour', '0')|int == h %}selected{% endif %}>{{ '%02d:00' % h }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Day</label>
+            <div class="select-wrap">
+              <select name="day" aria-label="Day">
+                {% for d in range(1, 32) %}
+                <option value="{{ d }}" {% if request.form.get('day', '1')|int == d %}selected{% endif %}>Day {{ d }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Month</label>
+            <div class="select-wrap">
+              <select name="month" aria-label="Month">
+                {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+                {% for i in range(1, 13) %}
+                <option value="{{ i }}" {% if request.form.get('month', '1')|int == i %}selected{% endif %}>{{ months[i-1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <button type="submit">Predict Consumption</button>
+      </form>
+
+      {% if prediction is not none %}
+      {% set pval = prediction | float %}
+      {% set is_anomaly = pred_status == 'High Consumption' %}
+
+      <div class="result">
+        <div class="result-inner {% if is_anomaly %}status-warn{% else %}status-ok{% endif %}">
+          <div class="result-location">{{ selected_dorm }} &mdash; {{ selected_room }}</div>
+          <div class="result-label">Predicted Consumption</div>
+          <div class="result-value">{{ prediction }}</div>
+          <div class="result-unit">normalized units (0&ndash;1 scale)</div>
+
+          <div class="gauge-wrap">
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill" id="gauge-fill"></div>
+              <script>document.getElementById('gauge-fill').style.width='{{ (pval * 100) | round | int }}%';</script>
+            </div>
+            <div class="gauge-labels"><span>0.0 Low</span><span>0.5 Medium</span><span>1.0 High</span></div>
+          </div>
+
+          {% if is_anomaly %}
+          <span class="result-status warn">High Consumption</span>
+          {% else %}
+          <span class="result-status ok">Normal</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- ── Model Performance ── -->
+  <div class="wrap">
+    <div class="card">
+      <div class="section-title">Model Performance</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">MAE</div>
+          <div class="metric-value">{{ stats.mae }}</div>
+          <div class="metric-sub">Mean Absolute Error</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">RMSE</div>
+          <div class="metric-value">{{ stats.rmse }}</div>
+          <div class="metric-sub">Root Mean Sq. Error</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">R&sup2;</div>
+          <div class="metric-value">{{ stats.r2 }}</div>
+          <div class="metric-sub">Test Score</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">CV R&sup2;</div>
+          <div class="metric-value">{{ stats.cv }}</div>
+          <div class="metric-sub">5-Fold Cross Val.</div>
+        </div>
+      </div>
+
+      <div class="section-title section-title-gap">Feature Importances</div>
+      <div class="coeff-table">
+        {% for c in stats.importances %}
+        <div class="coeff-row">
+          <span class="coeff-name">{{ c.feature }}</span>
+          <div class="coeff-bar-wrap">
+            <div class="coeff-bar {{ c.color_class }}" id="cb-{{ loop.index }}"></div>
+            <script>document.getElementById('cb-{{ loop.index }}').style.width='{{ c.width }}%';</script>
+          </div>
+          <span class="coeff-val {% if c.coef > 0 %}pos{% else %}neg{% endif %}">{{ c.coef }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="section-title section-title-gap">Actual vs Predicted (First 100 Test Samples)</div>
+      <img src="data:image/png;base64,{{ stats.chart }}" alt="Actual vs Predicted chart" class="chart-img"/>
+    </div>
+  </div>
+
+  <!-- ── Recent Predictions ── -->
+  {% if history %}
+  <div class="wrap">
+    <div class="card">
+      <div class="section-title">Recent Predictions</div>
+      <div class="history-list">
+        {% for h in history %}
+        <div class="history-row">
+          <div class="history-location">{{ h.dorm }}<br>{{ h.room }}</div>
+          <div class="history-meta">Temp {{ h.temp }} &nbsp;&middot;&nbsp; Humidity {{ h.hum }} &nbsp;&middot;&nbsp; Avg Past {{ h.apc }}<br>{{ h.time }}</div>
+          <div class="history-result">{{ h.result }}</div>
+          <span class="history-status {% if h.status == 'High Consumption' %}hs-anomaly{% else %}hs-normal{% endif %}">{{ h.status }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Top Consuming Rooms ── -->
+  <div class="wrap">
+    <div class="card">
+      <div class="section-title">Top Consuming Rooms</div>
+      <div class="top-rooms">
+        {% for room in top_rooms %}
+        <div class="top-room-row">
+          <div class="top-room-rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">#{{ loop.index }}</div>
+          <div class="top-room-name">{{ room.dorm }} &mdash; {{ room.room }}</div>
+          <div class="top-room-bar-wrap">
+            <div class="top-room-bar" id="tr-{{ loop.index }}"></div>
+            <script>document.getElementById('tr-{{ loop.index }}').style.width='{{ (room.value * 100) | int }}%';</script>
+          </div>
+          <span class="top-room-val">{{ room.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── About ── -->
+  <div class="wrap">
+    <div class="card">
+      <div class="section-title">About This Project</div>
+      <div class="about-grid">
+        <div class="about-item">
+          <div class="about-item-label">Dataset</div>
+          <div class="about-item-text">5,000 smart meter readings at 30-minute intervals across 3 dorms and 24 rooms. Features include temperature, humidity, wind speed, and historical consumption, normalized to a 0&ndash;1 scale.</div>
+        </div>
+        <div class="about-item">
+          <div class="about-item-label">Model</div>
+          <div class="about-item-text">{{ stats.model_type }} trained on 13 features including Dorm ID and Room ID. Time-based 70/30 train-test split preserves temporal integrity.</div>
+        </div>
+        <div class="about-item">
+          <div class="about-item-label">Feature Engineering</div>
+          <div class="about-item-text">IsWeekend, Season (0&ndash;3), and TimeOfDay are auto-derived from time inputs. Dorm and Room IDs are label-encoded (Dorm A=0, B=1, C=2; Room 101&ndash;108 &rarr; 0&ndash;7).</div>
+        </div>
+        <div class="about-item">
+          <div class="about-item-label">Anomaly Detection</div>
+          <div class="about-item-text">Rule-based: predictions above 0.75 are flagged as High Consumption. Status is shown on every prediction result and in the history log.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
+
 
     <form method="POST">
 
