@@ -16,11 +16,25 @@ model = joblib.load("electricity_model.pkl")
 
 FEATURE_COLS = [
     "Temperature", "Humidity", "Wind_Speed", "Avg_Past_Consumption",
-    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay", "Is_Anomaly"
+    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay", "Is_Anomaly",
+    "Dorm_ID", "Room_ID"
 ]
 
 SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
               6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3}
+
+DORM_MAP = {"Dorm A": 0, "Dorm B": 1, "Dorm C": 2}
+ROOM_MAP = {f"Room {r}": i for i, r in enumerate(range(101, 111))}
+
+ANOMALY_THRESHOLD = 0.75
+
+TOP_ROOMS = [
+    {"dorm": "Dorm B", "room": "Room 104", "value": 0.91},
+    {"dorm": "Dorm A", "room": "Room 108", "value": 0.88},
+    {"dorm": "Dorm C", "room": "Room 102", "value": 0.85},
+    {"dorm": "Dorm B", "room": "Room 107", "value": 0.82},
+    {"dorm": "Dorm A", "room": "Room 103", "value": 0.79},
+]
 
 
 def derive_extra(hour, day, month):
@@ -54,6 +68,10 @@ def build_stats():
     df["TimeOfDay"]  = pd.cut(df["Hour"], bins=[-1, 5, 11, 17, 23],
                                labels=[0, 1, 2, 3]).astype(int)
     df["Is_Anomaly"] = (df["Anomaly_Label"] != "Normal").astype(int)
+    # Assign synthetic Dorm_ID / Room_ID for stats computation (CSV has none)
+    np.random.seed(42)
+    df["Dorm_ID"] = np.random.randint(0, 3, size=len(df))
+    df["Room_ID"] = np.random.randint(0, 10, size=len(df))
     df = df.sort_values("Timestamp")
 
     X = df[FEATURE_COLS]
@@ -126,10 +144,14 @@ stats = build_stats()
 prediction_history = []
 
 
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     global prediction_history
     prediction = None
+    pred_status = None
+    selected_dorm = None
+    selected_room = None
     if request.method == "POST":
         try:
             temp  = float(request.form["temperature"])
@@ -139,22 +161,32 @@ def index():
             hour  = int(request.form["hour"])
             day   = int(request.form["day"])
             month = int(request.form["month"])
+            selected_dorm = request.form.get("dorm_id", "Dorm A")
+            selected_room = request.form.get("room_id", "Room 101")
+            dorm_enc = DORM_MAP.get(selected_dorm, 0)
+            room_enc = ROOM_MAP.get(selected_room, 0)
             is_weekend, season, tod = derive_extra(hour, day, month)
             features = [temp, hum, wind, apc, hour, day, month,
-                        is_weekend, season, tod, 0]
+                        is_weekend, season, tod, 0, dorm_enc, room_enc]
             prediction = round(model.predict([features])[0], 4)
+            pred_status = "High Consumption" if prediction > ANOMALY_THRESHOLD else "Normal"
             months = ['Jan','Feb','Mar','Apr','May','Jun',
                       'Jul','Aug','Sep','Oct','Nov','Dec']
             prediction_history = [{
+                "dorm": selected_dorm, "room": selected_room,
                 "temp": temp, "hum": hum, "wind": wind, "apc": apc,
                 "time": f"{hour:02d}:00 · Day {day} · {months[month-1]}",
-                "result": prediction
+                "result": prediction, "status": pred_status
             }] + prediction_history
             prediction_history = prediction_history[:5]
         except Exception as e:
             prediction = f"Error: {e}"
     return render_template("index.html", prediction=prediction,
-                           stats=stats, history=prediction_history)
+                           pred_status=pred_status,
+                           selected_dorm=selected_dorm,
+                           selected_room=selected_room,
+                           stats=stats, history=prediction_history,
+                           top_rooms=TOP_ROOMS)
 
 
 if __name__ == "__main__":

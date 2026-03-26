@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Meter Electricity Forecast | Random Forest Regression</title>
+  <title>Dorm &amp; Room Electricity Monitoring and Forecasting System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -375,25 +375,92 @@
     .about-item-label { font-size: 0.68rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;
       letter-spacing: 0.08em; margin-bottom: 6px; }
     .about-item-text { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
+
+    /* Result location header */
+    .result-location {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    /* Status row (level badge + anomaly badge) */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 16px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .status-normal  { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .status-anomaly { background: rgba(239,68,68,0.15);  color: #ef4444; }
+
+    /* Top consuming rooms */
+    .top-rooms { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .top-room-row { display: grid; grid-template-columns: 180px 1fr 52px; align-items: center; gap: 12px; }
+    .top-room-info { display: flex; align-items: center; gap: 8px; }
+    .top-room-rank {
+      font-size: 0.72rem; font-weight: 800; color: #38bdf8;
+      background: rgba(56,189,248,0.1); border-radius: 6px; padding: 1px 7px;
+    }
+    .top-room-name { font-size: 0.82rem; color: #94a3b8; font-weight: 500; }
+    .top-room-bar-wrap { background: #1e293b; border-radius: 99px; height: 7px; overflow: hidden; }
+    .top-room-bar { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #818cf8); min-width: 2px; }
+    .top-room-val { font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-align: right; }
   </style>
 </head>
 <body>
 
   <div class="page-header">
-    <h1>⚡ Smart Meter Forecast</h1>
-    <p>Electricity Consumption Prediction · {{ stats.model_type }}</p>
+    <h1>Dorm &amp; Room Electricity Monitoring</h1>
+    <p>Forecasting System &nbsp;·&nbsp; Multiple Linear Regression &nbsp;·&nbsp; {{ stats.model_type }}</p>
   </div>
 
   <div class="card">
 
     <form method="POST">
 
+      <div class="section-title">Location</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>Dorm</label>
+          <select name="dorm_id" aria-label="Dorm">
+            {% for d in ['Dorm A', 'Dorm B', 'Dorm C'] %}
+            <option value="{{ d }}" {% if request.form.get('dorm_id', 'Dorm A') == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Room</label>
+          <select name="room_id" aria-label="Room">
+            {% for r in range(101, 111) %}
+            <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 101') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </div>
+
       <div class="section-title">Environmental Conditions</div>
       <div class="grid">
 
         <div class="field">
           <div class="field-header">
-            <label>🌡 Temperature</label>
+            <label>Temperature</label>
             <span class="val-badge" id="temp-val">{{ request.form.get('temperature', '0.50') }}</span>
           </div>
           <input type="range" min="0" max="1" step="0.01" aria-label="Temperature slider"
@@ -406,7 +473,7 @@
 
         <div class="field">
           <div class="field-header">
-            <label>💧 Humidity</label>
+            <label>Humidity</label>
             <span class="val-badge" id="hum-val">{{ request.form.get('humidity', '0.50') }}</span>
           </div>
           <input type="range" min="0" max="1" step="0.01" aria-label="Humidity slider"
@@ -419,7 +486,7 @@
 
         <div class="field">
           <div class="field-header">
-            <label>🌬 Wind Speed</label>
+            <label>Wind Speed</label>
             <span class="val-badge" id="wind-val">{{ request.form.get('wind_speed', '0.50') }}</span>
           </div>
           <input type="range" min="0" max="1" step="0.01" aria-label="Wind Speed slider"
@@ -432,7 +499,7 @@
 
         <div class="field">
           <div class="field-header">
-            <label>🔋 Avg Past Consumption</label>
+            <label>Avg Past Consumption</label>
             <span class="val-badge" id="apc-val">{{ request.form.get('avg_past_consumption', '0.50') }}</span>
           </div>
           <input type="range" min="0" max="1" step="0.01" aria-label="Avg Past Consumption slider"
@@ -449,7 +516,7 @@
       <div class="grid">
 
         <div class="field">
-          <label>🕐 Hour</label>
+          <label>Hour</label>
           <select name="hour" aria-label="Hour">
             {% for h in range(0, 24) %}
             <option value="{{ h }}" {% if request.form.get('hour', '0')|int == h %}selected{% endif %}>
@@ -460,7 +527,7 @@
         </div>
 
         <div class="field">
-          <label>📅 Day</label>
+          <label>Day</label>
           <select name="day" aria-label="Day">
             {% for d in range(1, 32) %}
             <option value="{{ d }}" {% if request.form.get('day', '1')|int == d %}selected{% endif %}>
@@ -471,7 +538,7 @@
         </div>
 
         <div class="field full">
-          <label>🗓 Month</label>
+          <label>Month</label>
           <select name="month" aria-label="Month">
             {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
             {% for i in range(1, 13) %}
@@ -485,7 +552,7 @@
       </div>
 
       <div class="divider"></div>
-      <button type="submit">⚡ Predict Consumption</button>
+      <button type="submit">Predict Consumption</button>
     </form>
 
     {% if prediction is not none %}
@@ -500,10 +567,12 @@
       {% set level = 'High' %}
       {% set level_class = 'level-high' %}
     {% endif %}
+    {% set is_anomaly = pred_status == 'High Consumption' %}
 
     <div class="result">
       <div class="result-inner">
-        <div class="result-label">Predicted Electricity Consumption</div>
+        <div class="result-location">{{ selected_dorm }} &mdash; {{ selected_room }}</div>
+        <div class="result-label">Predicted Consumption</div>
         <div class="result-value">{{ prediction }}</div>
         <div class="result-unit">normalized units (0–1 scale)</div>
 
@@ -515,7 +584,14 @@
           <div class="gauge-labels"><span>0 Low</span><span>0.5 Medium</span><span>1.0 High</span></div>
         </div>
 
-        <span class="level-badge {{ level_class }}">{{ level }} Consumption</span>
+        <div class="status-row">
+          <span class="level-badge {{ level_class }}">{{ level }} Consumption</span>
+          {% if is_anomaly %}
+          <span class="status-badge status-anomaly">High Consumption</span>
+          {% else %}
+          <span class="status-badge status-normal">Normal</span>
+          {% endif %}
+        </div>
       </div>
     </div>
     {% endif %}
@@ -575,23 +651,27 @@
     <table class="history-table">
       <thead>
         <tr>
+          <th>Dorm</th>
+          <th>Room</th>
           <th>Temp</th>
           <th>Humidity</th>
-          <th>Wind</th>
           <th>Avg Past</th>
           <th>Time</th>
           <th>Result</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
         {% for h in history %}
         <tr>
+          <td>{{ h.dorm }}</td>
+          <td>{{ h.room }}</td>
           <td>{{ h.temp }}</td>
           <td>{{ h.hum }}</td>
-          <td>{{ h.wind }}</td>
           <td>{{ h.apc }}</td>
           <td>{{ h.time }}</td>
           <td class="td-result">{{ h.result }}</td>
+          <td><span class="status-badge {% if h.status == 'High Consumption' %}status-anomaly{% else %}status-normal{% endif %}">{{ h.status }}</span></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -599,25 +679,45 @@
   </div>
   {% endif %}
 
+  <!-- Top Consuming Rooms -->
+  <div class="card card-bottom">
+    <div class="section-title">Top Consuming Rooms</div>
+    <div class="top-rooms">
+      {% for room in top_rooms %}
+      <div class="top-room-row">
+        <div class="top-room-info">
+          <span class="top-room-rank">#{{ loop.index }}</span>
+          <span class="top-room-name">{{ room.dorm }} &mdash; {{ room.room }}</span>
+        </div>
+        <div class="top-room-bar-wrap">
+          <div class="top-room-bar" id="tr-{{ loop.index }}"></div>
+          <script>document.getElementById('tr-{{ loop.index }}').style.width='{{ (room.value * 100) | int }}%';</script>
+        </div>
+        <span class="top-room-val">{{ room.value }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
   <!-- About Section -->
   <div class="card card-bottom">
     <div class="section-title">About This Project</div>
     <div class="about-grid">
       <div class="about-item">
         <div class="about-item-label">Dataset</div>
-        <div class="about-item-text">5,000 smart meter readings at 30-minute intervals. Features include temperature, humidity, wind speed, and historical consumption, all normalized to a 0–1 scale.</div>
+        <div class="about-item-text">5,000 smart meter readings at 30-minute intervals across dorms and rooms. Features include temperature, humidity, wind speed, and historical consumption, normalized to a 0–1 scale.</div>
       </div>
       <div class="about-item">
         <div class="about-item-label">Model</div>
-        <div class="about-item-text">{{ stats.model_type }} trained on 11 features. Time-based 70/30 train-test split preserves temporal integrity. Cross-validated with 5 folds.</div>
+        <div class="about-item-text">{{ stats.model_type }} trained on 13 features including Dorm ID and Room ID. Time-based 70/30 train-test split preserves temporal integrity.</div>
       </div>
       <div class="about-item">
         <div class="about-item-label">Feature Engineering</div>
-        <div class="about-item-text">IsWeekend, Season (0-3), and TimeOfDay (night/morning/afternoon/evening) are automatically derived from your selected time inputs.</div>
+        <div class="about-item-text">IsWeekend, Season (0-3), and TimeOfDay are auto-derived from time inputs. Dorm and Room IDs are label-encoded (Dorm A=0, B=1, C=2; Room 101–110 → 0–9).</div>
       </div>
       <div class="about-item">
-        <div class="about-item-label">Metrics Guide</div>
-        <div class="about-item-text">MAE = average prediction error. RMSE = penalises large errors more. R² = proportion of variance explained (1.0 is perfect). CV R² = generalisation score.</div>
+        <div class="about-item-label">Anomaly Detection</div>
+        <div class="about-item-text">Rule-based: predictions above 0.75 are flagged as High Consumption. The Normal / High Consumption status is shown on every prediction and in history.</div>
       </div>
     </div>
   </div>
