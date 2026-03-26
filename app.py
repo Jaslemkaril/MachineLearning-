@@ -28,6 +28,11 @@ ROOM_MAP = {f"Room {r}": i for i, r in enumerate(range(101, 109))}
 
 ANOMALY_THRESHOLD = 0.75
 
+# Electricity cost configuration
+# Normalized value 1.0 is mapped to KWH_MAX kWh per 30-min reading
+KWH_MAX = 2.0
+PESO_PER_KWH = 10.50
+
 TOP_ROOMS = [
     {"dorm": "Dorm B", "room": "Room 104", "value": 0.91},
     {"dorm": "Dorm A", "room": "Room 107", "value": 0.88},
@@ -152,6 +157,8 @@ def index():
     pred_status = None
     selected_dorm = None
     selected_room = None
+    pred_kwh = None
+    pred_cost = None
     if request.method == "POST":
         try:
             temp  = float(request.form["temperature"])
@@ -170,13 +177,16 @@ def index():
                         is_weekend, season, tod, 0, dorm_enc, room_enc]
             prediction = round(model.predict([features])[0], 4)
             pred_status = "High Consumption" if prediction > ANOMALY_THRESHOLD else "Normal"
+            pred_kwh = round(prediction * KWH_MAX, 4)
+            pred_cost = round(pred_kwh * PESO_PER_KWH, 2)
             months = ['Jan','Feb','Mar','Apr','May','Jun',
                       'Jul','Aug','Sep','Oct','Nov','Dec']
             prediction_history = [{
                 "dorm": selected_dorm, "room": selected_room,
                 "temp": temp, "hum": hum, "wind": wind, "apc": apc,
                 "time": f"{hour:02d}:00 · Day {day} · {months[month-1]}",
-                "result": prediction, "status": pred_status
+                "result": prediction, "status": pred_status,
+                "kwh": pred_kwh, "cost": pred_cost
             }] + prediction_history
             prediction_history = prediction_history[:5]
         except Exception as e:
@@ -185,6 +195,7 @@ def index():
                            pred_status=pred_status,
                            selected_dorm=selected_dorm,
                            selected_room=selected_room,
+                           pred_kwh=pred_kwh, pred_cost=pred_cost,
                            stats=stats, history=prediction_history,
                            top_rooms=TOP_ROOMS)
 
