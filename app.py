@@ -33,17 +33,17 @@ FEATURE_COLS = [
     "Appliance_kWh_Active",
 ]
 
-# Appliance catalogue: key → (brand, model, rated_watts)
+# Appliance catalogue: key → (default_watts, display_label)
 APPLIANCE_INFO = {
-    "App_Electric_Fan":    ("Panasonic",  "F-M14D5",           35),
-    "App_Air_Conditioner": ("Carrier",    "53KHCT012-703",    1200),
-    "App_Laptop_PC":       ("ASUS",       "VivoBook 15 X1502", 65),
-    "App_Refrigerator":    ("Condura",    "CTD-510MNi",       120),
-    "App_TV_Monitor":      ("Samsung",    "UA32T4500",         40),
-    "App_Phone_Charger":   ("Anker",      "PowerPort III 20W", 20),
-    "App_Electric_Kettle": ("Kyowa",      "KW-1270",         1500),
-    "App_Rice_Cooker":     ("Hanabishi",  "HRC-508",          400),
-    "App_Study_Lamp":      ("Firefly",    "FEL-500",            9),
+    "App_Electric_Fan":    (35,   "Electric Fan"),
+    "App_Air_Conditioner": (1200, "Air Conditioner"),
+    "App_Laptop_PC":       (65,   "Laptop / PC"),
+    "App_Refrigerator":    (120,  "Refrigerator"),
+    "App_TV_Monitor":      (40,   "TV / Monitor"),
+    "App_Phone_Charger":   (20,   "Phone Charger"),
+    "App_Electric_Kettle": (1500, "Electric Kettle"),
+    "App_Rice_Cooker":     (400,  "Rice Cooker"),
+    "App_Study_Lamp":      (9,    "Study Lamp"),
 }
 
 SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
@@ -51,7 +51,7 @@ SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
 
 DORMS      = ["Dorm A", "Dorm B", "Dorm C"]
 DORM_MAP   = {d: i for i, d in enumerate(DORMS)}
-ROOMS      = [f"Room {r}" for r in range(101, 109)]
+ROOMS      = [f"Room {r}" for r in range(1, 25)]  # Room 1–24 (3 dorms × 8 rooms)
 ROOM_MAP   = {r: i for i, r in enumerate(ROOMS)}
 SIZE_MAP   = {"Small": 0, "Medium": 1, "Large": 2}
 
@@ -128,10 +128,10 @@ def derive_extra(hour: int, day: int, month: int) -> tuple:
     return is_weekend, season, tod
 
 
-def compute_appliance_kwh(active_flags: dict) -> float:
-    """Compute total kWh consumed in a 30-min slot from active appliance flags."""
+def compute_appliance_kwh(active_flags: dict, custom_watts: dict) -> float:
+    """Compute total kWh consumed in a 30-min slot from active appliance flags and custom wattages."""
     total_watts = sum(
-        APPLIANCE_INFO[key][2]
+        custom_watts.get(key, APPLIANCE_INFO[key][0])
         for key in APPLIANCE_COLS
         if active_flags.get(key, 0)
     )
@@ -193,6 +193,18 @@ def validate_form(form) -> tuple:
 
     # Appliance flags (checkboxes — absent means 0)
     app_flags = {key: 1 if form.get(key) else 0 for key in APPLIANCE_COLS}
+    
+    # Custom wattage values (optional — defaults to APPLIANCE_INFO if not provided)
+    custom_watts = {}
+    for key in APPLIANCE_COLS:
+        watts_key = f"{key}_watts"
+        if watts_key in form:
+            try:
+                w = int(form.get(watts_key, "0"))
+                if 1 <= w <= 5000:
+                    custom_watts[key] = w
+            except ValueError:
+                pass  # Use default if invalid
 
     if errors:
         return None, " ".join(errors)
@@ -203,6 +215,7 @@ def validate_form(form) -> tuple:
         "dorm": dorm, "room": room,
         "size_cat": size_cat, "occ": occ,
         "app_flags": app_flags,
+        "custom_watts": custom_watts,
     }, None
 
 
@@ -242,12 +255,13 @@ def index():
             size_cat = parsed["size_cat"]
             occ      = parsed["occ"]
             app_flags = parsed["app_flags"]
+            custom_watts = parsed["custom_watts"]
 
             selected_dorm = dorm
             selected_room = room
 
             is_weekend, season, tod = derive_extra(hour, day, month)
-            app_kwh = compute_appliance_kwh(app_flags)
+            app_kwh = compute_appliance_kwh(app_flags, custom_watts)
 
             feature_row = {
                 "Temperature":          temp,
@@ -278,12 +292,10 @@ def index():
             # Per-appliance kWh breakdown for the result panel
             app_kwh_breakdown = [
                 {
-                    "label":  key.replace("App_", "").replace("_", " "),
-                    "brand":  APPLIANCE_INFO[key][0],
-                    "model":  APPLIANCE_INFO[key][1],
-                    "watts":  APPLIANCE_INFO[key][2],
+                    "label":  APPLIANCE_INFO[key][1],
+                    "watts":  custom_watts.get(key, APPLIANCE_INFO[key][0]),
                     "active": app_flags[key],
-                    "kwh":    round(APPLIANCE_INFO[key][2] * 0.5 / 1000, 4),
+                    "kwh":    round(custom_watts.get(key, APPLIANCE_INFO[key][0]) * 0.5 / 1000, 4),
                 }
                 for key in APPLIANCE_COLS
             ]

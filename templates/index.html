@@ -748,8 +748,8 @@
             <label>Room</label>
             <div class="select-wrap">
               <select name="room_id" aria-label="Room">
-                {% for r in range(101, 109) %}
-                <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 101') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
+                {% for r in range(1, 25) %}
+                <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 1') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -877,26 +877,34 @@
         </div>
 
         <div class="section-title">Appliances in Use</div>
+        <p style="font-size:0.72rem;color:#64748b;margin-bottom:12px;">Check the appliances currently active in this room. Default wattage values are shown — you can adjust them if your appliances differ.</p>
         <div class="appliance-grid">
           {% set app_display = [
-            ('App_Electric_Fan',    'Electric Fan',    'Panasonic F-M14D5',          35),
-            ('App_Air_Conditioner', 'Air Conditioner', 'Carrier 53KHCT012-703',     1200),
-            ('App_Laptop_PC',       'Laptop / PC',     'ASUS VivoBook 15 X1502',      65),
-            ('App_Refrigerator',    'Refrigerator',    'Condura CTD-510MNi',         120),
-            ('App_TV_Monitor',      'TV / Monitor',    'Samsung UA32T4500',           40),
-            ('App_Phone_Charger',   'Phone Charger',   'Anker PowerPort III 20W',     20),
-            ('App_Electric_Kettle', 'Electric Kettle', 'Kyowa KW-1270',             1500),
-            ('App_Rice_Cooker',     'Rice Cooker',     'Hanabishi HRC-508',          400),
-            ('App_Study_Lamp',      'Study Lamp',      'Firefly FEL-500',              9),
+            ('App_Electric_Fan',    'Electric Fan',    35,   'e.g., Panasonic, Asahi, Standard'),
+            ('App_Air_Conditioner', 'Air Conditioner', 1200, 'e.g., Carrier, LG, Daikin'),
+            ('App_Laptop_PC',       'Laptop / PC',     65,   'e.g., ASUS, Dell, HP'),
+            ('App_Refrigerator',    'Refrigerator',    120,  'e.g., Condura, Samsung, LG'),
+            ('App_TV_Monitor',      'TV / Monitor',    40,   'e.g., Samsung, Sony, TCL'),
+            ('App_Phone_Charger',   'Phone Charger',   20,   'e.g., Anker, Belkin, Generic'),
+            ('App_Electric_Kettle', 'Electric Kettle', 1500, 'e.g., Kyowa, Imarflex'),
+            ('App_Rice_Cooker',     'Rice Cooker',     400,  'e.g., Hanabishi, Imarflex'),
+            ('App_Study_Lamp',      'Study Lamp',      9,    'e.g., LED desk lamp'),
           ] %}
-          {% for key, label, brand_model, watts in app_display %}
+          {% for key, label, default_watts, examples in app_display %}
           <div class="appliance-item">
             <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1"
               {% if request.form.get(key) %}checked{% endif %}>
             <label for="{{ key }}">
               <span class="app-name">{{ label }}</span>
-              <span class="app-brand">{{ brand_model }}</span>
-              <span class="app-watts">{{ watts }}W · {{ "%.4f"|format(watts * 0.5 / 1000) }} kWh/slot</span>
+              <span class="app-brand">{{ examples }}</span>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <input type="number" name="{{ key }}_watts" id="{{ key }}_watts" 
+                  value="{{ request.form.get(key + '_watts', default_watts) }}" 
+                  min="1" max="5000" step="1"
+                  style="width:70px;padding:3px 6px;font-size:0.7rem;background:#0c1628;border:1px solid #1e293b;border-radius:4px;color:#38bdf8;"
+                  placeholder="{{ default_watts }}">
+                <span style="font-size:0.68rem;color:#64748b;">W</span>
+              </div>
             </label>
           </div>
           {% endfor %}
@@ -958,7 +966,7 @@
               {% for a in app_kwh_breakdown %}
               <div class="app-bd-item {% if a.active %}on{% else %}off{% endif %}">
                 <div class="app-bd-name">{{ a.label }}</div>
-                <div class="app-bd-brand">{{ a.brand }} · {{ a.watts }}W</div>
+                <div class="app-bd-brand">{{ a.watts }}W</div>
                 {% if a.active %}
                 <div class="app-bd-kwh">{{ a.kwh }} kWh</div>
                 {% endif %}
@@ -1081,7 +1089,7 @@
         </div>
         <div class="about-item">
           <div class="about-item-label">Appliance Reference</div>
-          <div class="about-item-text">Fan 35W (Panasonic) · AC 1200W (Carrier) · Laptop 65W (ASUS) · Fridge 120W (Condura) · TV 40W (Samsung) · Charger 20W (Anker) · Kettle 1500W (Kyowa) · Rice Cooker 400W (Hanabishi) · Lamp 9W (Firefly)</div>
+          <div class="about-item-text">Users can input custom wattage for their specific appliances. Default values: Fan 35W · AC 1200W · Laptop 65W · Fridge 120W · TV 40W · Charger 20W · Kettle 1500W · Rice Cooker 400W · Lamp 9W</div>
         </div>
       </div>
     </div>
