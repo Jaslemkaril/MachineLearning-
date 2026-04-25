@@ -1348,74 +1348,336 @@
       try {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 20;
+        
+        // ═══════════════════════════════════════════════════════════════
+        // PAGE 1: HEADER & EXECUTIVE SUMMARY
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Gradient header background
+        pdf.setFillColor(15, 23, 42);
+        pdf.rect(0, 0, pageWidth, 50, 'F');
         
         // Title
-        pdf.setFontSize(20);
+        pdf.setFontSize(24);
         pdf.setTextColor(56, 189, 248);
-        pdf.text('Electricity Consumption Report', 105, 20, { align: 'center' });
+        pdf.text('⚡ Electricity Consumption Report', pageWidth/2, 20, { align: 'center' });
         
-        pdf.setFontSize(10);
+        pdf.setFontSize(11);
+        pdf.setTextColor(148, 163, 184);
+        pdf.text('Smart Meter Forecasting System', pageWidth/2, 28, { align: 'center' });
+        
+        pdf.setFontSize(9);
         pdf.setTextColor(100, 116, 139);
-        pdf.text('Generated: ' + new Date().toLocaleString(), 105, 28, { align: 'center' });
+        const now = new Date();
+        pdf.text('Generated: ' + now.toLocaleString('en-US', { 
+          dateStyle: 'full', 
+          timeStyle: 'short' 
+        }), pageWidth/2, 38, { align: 'center' });
         
-        let yPos = 40;
+        let yPos = 60;
         
         {% if prediction %}
-        // Prediction Results
+        // Executive Summary Box
+        pdf.setFillColor(56, 189, 248, 0.1);
+        pdf.setDrawColor(56, 189, 248);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 45, 3, 3, 'FD');
+        
+        yPos += 8;
         pdf.setFontSize(14);
         pdf.setTextColor(56, 189, 248);
-        pdf.text('Prediction Results', 20, yPos);
+        pdf.text('📊 Executive Summary', margin + 5, yPos);
+        
         yPos += 10;
+        pdf.setFontSize(10);
+        pdf.setTextColor(30, 41, 59);
+        
+        // Two-column layout
+        const col1X = margin + 5;
+        const col2X = pageWidth/2 + 5;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Location:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ selected_dorm }} - {{ selected_room }}', col1X + 25, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Room Size:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ size_cat }} ({{ room_info.size_m2 if room_info else "N/A" }} m²)', col2X + 25, yPos);
+        
+        yPos += 7;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Predicted:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor({{ '239, 68, 68' if pred_status == 'High Consumption' else '16, 185, 129' }});
+        pdf.text('{{ prediction }} ({{ pred_status }})', col1X + 25, yPos);
+        
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Occupants:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ occ if occ else "N/A" }} person{% if occ > 1 %}s{% endif %}', col2X + 25, yPos);
+        
+        yPos += 7;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Estimated kWh:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ pred_kwh }} kWh/slot', col1X + 25, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Timestamp:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ request.form.get("hour", "0")|int }}:00, Day {{ request.form.get("day", "1") }}', col2X + 25, yPos);
+        
+        yPos += 7;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Estimated Cost:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(239, 68, 68);
+        pdf.setFontSize(11);
+        pdf.text('₱{{ pred_cost }}', col1X + 25, yPos);
         
         pdf.setFontSize(10);
-        pdf.setTextColor(0, 0, 0);
-        pdf.text('Location: {{ selected_dorm }} - {{ selected_room }}', 20, yPos);
-        yPos += 6;
-        pdf.text('Predicted Consumption: {{ prediction }}', 20, yPos);
-        yPos += 6;
-        pdf.text('Estimated kWh: {{ pred_kwh }} kWh', 20, yPos);
-        yPos += 6;
-        pdf.text('Estimated Cost: ₱{{ pred_cost }}', 20, yPos);
-        yPos += 6;
-        pdf.text('Status: {{ pred_status }}', 20, yPos);
-        yPos += 12;
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Rate:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('₱10.50/kWh', col2X + 25, yPos);
+        
+        yPos += 15;
+        {% else %}
+        yPos += 10;
+        {% endif %}
+        
+        // Environmental Conditions
+        pdf.setFillColor(16, 185, 129, 0.1);
+        pdf.setDrawColor(16, 185, 129);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 35, 3, 3, 'FD');
+        
+        yPos += 8;
+        pdf.setFontSize(14);
+        pdf.setTextColor(16, 185, 129);
+        pdf.text('🌤️ Environmental Conditions', margin + 5, yPos);
+        
+        yPos += 10;
+        pdf.setFontSize(10);
+        pdf.setTextColor(30, 41, 59);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Temperature:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ (15 + (request.form.get("temperature", "0.5")|float) * 20)|round(1) }}°C', col1X + 30, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Wind Speed:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ ((request.form.get("wind_speed", "0.5")|float) * 30)|round(1) }} km/h', col2X + 30, yPos);
+        
+        yPos += 7;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Humidity:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ (30 + (request.form.get("humidity", "0.5")|float) * 70)|round(0)|int }}%', col1X + 30, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Avg Past:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ ((request.form.get("avg_past_consumption", "0.5")|float) * 2)|round(2) }} kWh', col2X + 30, yPos);
+        
+        yPos += 15;
+        
+        {% if app_kwh_breakdown %}
+        // Active Appliances
+        pdf.setFillColor(139, 92, 246, 0.1);
+        pdf.setDrawColor(139, 92, 246);
+        const applianceHeight = {{ app_kwh_breakdown|selectattr('active')|list|length * 7 + 18 }};
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, applianceHeight, 3, 3, 'FD');
+        
+        yPos += 8;
+        pdf.setFontSize(14);
+        pdf.setTextColor(139, 92, 246);
+        pdf.text('🔌 Active Appliances', margin + 5, yPos);
+        
+        yPos += 10;
+        pdf.setFontSize(9);
+        pdf.setTextColor(30, 41, 59);
+        
+        {% for a in app_kwh_breakdown %}
+        {% if a.active %}
+        pdf.setFont(undefined, 'bold');
+        pdf.text('• {{ a.label }}:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ a.watts }}W', col1X + 40, yPos);
+        pdf.text('{{ a.kwh }} kWh/slot', col1X + 60, yPos);
+        pdf.setTextColor(239, 68, 68);
+        pdf.text('₱{{ (a.kwh * 10.5)|round(2) }}', col1X + 85, yPos);
+        pdf.setTextColor(30, 41, 59);
+        yPos += 7;
+        {% endif %}
+        {% endfor %}
+        
+        yPos += 8;
         {% endif %}
         
         // Model Performance
+        pdf.setFillColor(245, 158, 11, 0.1);
+        pdf.setDrawColor(245, 158, 11);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 35, 3, 3, 'FD');
+        
+        yPos += 8;
         pdf.setFontSize(14);
-        pdf.setTextColor(56, 189, 248);
-        pdf.text('Model Performance', 20, yPos);
+        pdf.setTextColor(245, 158, 11);
+        pdf.text('🎯 Model Performance', margin + 5, yPos);
+        
         yPos += 10;
-        
         pdf.setFontSize(10);
-        pdf.setTextColor(0, 0, 0);
-        pdf.text('MAE: {{ stats.mae }}', 20, yPos);
-        pdf.text('RMSE: {{ stats.rmse }}', 70, yPos);
-        yPos += 6;
-        pdf.text('R²: {{ stats.r2 }}', 20, yPos);
-        pdf.text('CV R²: {{ stats.cv }}', 70, yPos);
-        yPos += 6;
-        pdf.text('Model: {{ stats.model_type }}', 20, yPos);
-        yPos += 12;
+        pdf.setTextColor(30, 41, 59);
         
-        // Top Rooms
-        pdf.setFontSize(14);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('MAE:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ stats.mae }}', col1X + 20, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('R² Score:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(16, 185, 129);
+        pdf.text('{{ stats.r2 }} ({{ (stats.r2 * 100)|round(1) }}%)', col2X + 20, yPos);
+        
+        yPos += 7;
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFont(undefined, 'bold');
+        pdf.text('RMSE:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ stats.rmse }}', col1X + 20, yPos);
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text('CV R²:', col2X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ stats.cv }}', col2X + 20, yPos);
+        
+        yPos += 7;
+        pdf.setFont(undefined, 'bold');
+        pdf.text('Model:', col1X, yPos);
+        pdf.setFont(undefined, 'normal');
+        pdf.text('{{ stats.model_type }}', col1X + 20, yPos);
+        
+        // ═══════════════════════════════════════════════════════════════
+        // PAGE 2: DETAILED ANALYSIS
+        // ═══════════════════════════════════════════════════════════════
+        pdf.addPage();
+        yPos = 20;
+        
+        // Page header
+        pdf.setFontSize(16);
         pdf.setTextColor(56, 189, 248);
-        pdf.text('Top Consuming Rooms', 20, yPos);
-        yPos += 10;
+        pdf.text('📈 Detailed Analysis', margin, yPos);
+        yPos += 15;
         
-        pdf.setFontSize(10);
-        pdf.setTextColor(0, 0, 0);
+        // Top Consuming Rooms
+        pdf.setFillColor(59, 130, 246, 0.1);
+        pdf.setDrawColor(59, 130, 246);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 55, 3, 3, 'FD');
+        
+        yPos += 8;
+        pdf.setFontSize(12);
+        pdf.setTextColor(59, 130, 246);
+        pdf.text('🏆 Top 5 Consuming Rooms', margin + 5, yPos);
+        
+        yPos += 10;
+        pdf.setFontSize(9);
+        pdf.setTextColor(30, 41, 59);
+        
         {% for room in stats.get('top_rooms', [])[:5] %}
-        pdf.text('{{ loop.index }}. {{ room.dorm }} {{ room.room }}: {{ room.value }}', 20, yPos);
-        yPos += 6;
+        const rank{{ loop.index }} = '{{ loop.index }}';
+        const medal{{ loop.index }} = rank{{ loop.index }} === '1' ? '🥇' : rank{{ loop.index }} === '2' ? '🥈' : rank{{ loop.index }} === '3' ? '🥉' : '  ';
+        pdf.text(medal{{ loop.index }} + ' {{ room.dorm }} {{ room.room }}', col1X, yPos);
+        pdf.setFont(undefined, 'bold');
+        pdf.setTextColor(239, 68, 68);
+        pdf.text('{{ room.value }}', col2X + 40, yPos);
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFont(undefined, 'normal');
+        yPos += 7;
         {% endfor %}
+        
+        yPos += 10;
+        
+        // Cost Optimization Recommendations
+        pdf.setFillColor(16, 185, 129, 0.1);
+        pdf.setDrawColor(16, 185, 129);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 80, 3, 3, 'FD');
+        
+        yPos += 8;
+        pdf.setFontSize(12);
+        pdf.setTextColor(16, 185, 129);
+        pdf.text('💡 Cost Optimization Recommendations', margin + 5, yPos);
+        
+        yPos += 10;
+        pdf.setFontSize(9);
+        pdf.setTextColor(30, 41, 59);
+        
+        const recommendations = [
+          '• Use high-power appliances (AC, kettle, rice cooker) during off-peak hours (10 PM - 6 AM)',
+          '• Set AC temperature to 24-26°C and use timer mode to save up to 30% on cooling costs',
+          '• Unplug devices when not in use to eliminate standby power consumption (~5-10% savings)',
+          '• Replace old appliances with energy-efficient models (look for 5-star ratings)',
+          '• Use natural ventilation when possible instead of AC during cooler hours',
+          '• Coordinate appliance usage among roommates to avoid simultaneous high loads',
+          '• Regular maintenance of AC filters can improve efficiency by 5-15%',
+          '• Use LED bulbs instead of incandescent (75% less energy consumption)'
+        ];
+        
+        recommendations.forEach((rec, i) => {
+          const lines = pdf.splitTextToSize(rec, pageWidth - 2*margin - 10);
+          pdf.text(lines, margin + 5, yPos);
+          yPos += lines.length * 5;
+        });
+        
+        yPos += 10;
+        
+        // Potential Savings Calculation
+        {% if prediction %}
+        pdf.setFillColor(245, 158, 11, 0.1);
+        pdf.setDrawColor(245, 158, 11);
+        pdf.roundedRect(margin, yPos, pageWidth - 2*margin, 35, 3, 3, 'FD');
+        
+        yPos += 8;
+        pdf.setFontSize(12);
+        pdf.setTextColor(245, 158, 11);
+        pdf.text('💰 Potential Savings Analysis', margin + 5, yPos);
+        
+        yPos += 10;
+        pdf.setFontSize(9);
+        pdf.setTextColor(30, 41, 59);
+        
+        const currentCost = {{ pred_cost }};
+        const dailyCost = currentCost * 48; // 48 slots per day
+        const monthlyCost = dailyCost * 30;
+        
+        pdf.text('Current cost per slot: ₱' + currentCost.toFixed(2), col1X, yPos);
+        pdf.text('Estimated daily: ₱' + dailyCost.toFixed(2), col2X, yPos);
+        yPos += 7;
+        
+        pdf.text('10% reduction: ₱' + (dailyCost * 0.1).toFixed(2) + '/day', col1X, yPos);
+        pdf.text('20% reduction: ₱' + (dailyCost * 0.2).toFixed(2) + '/day', col2X, yPos);
+        yPos += 7;
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.setTextColor(16, 185, 129);
+        pdf.text('Monthly savings (20%): ₱' + (monthlyCost * 0.2).toFixed(2), col1X, yPos);
+        {% endif %}
         
         // Footer
         pdf.setFontSize(8);
         pdf.setTextColor(148, 163, 184);
-        pdf.text('Dorm & Room Electricity Monitoring System', 105, 285, { align: 'center' });
+        pdf.text('Dorm & Room Electricity Monitoring System | Page 2', pageWidth/2, pageHeight - 10, { align: 'center' });
+        pdf.text('For educational purposes only. Actual savings may vary.', pageWidth/2, pageHeight - 6, { align: 'center' });
         
+        // Save
         pdf.save('electricity-report-' + Date.now() + '.pdf');
         
         button.textContent = '✓ Downloaded!';

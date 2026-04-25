@@ -260,6 +260,8 @@ def index():
     pred_cost     = None
     form_error    = None
     app_kwh_breakdown = []
+    room_info     = None
+    occ           = None
 
     if request.method == "POST":
         parsed, form_error = validate_form(request.form)
@@ -288,6 +290,9 @@ def index():
             # Room encoding: Room 1-8 → 0-7
             room_num = int(room.split()[1])
             room_enc = room_num - 1
+            
+            # Get room info for display
+            room_info = get_room_info(dorm, room)
 
             feature_row = {
                 "Temperature":          temp,
@@ -367,6 +372,8 @@ def index():
         appliance_cols=APPLIANCE_COLS,
         app_kwh_breakdown=app_kwh_breakdown,
         room_config=ROOM_CONFIG,
+        room_info=room_info,
+        occ=occ,
     )
 
 
