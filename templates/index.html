@@ -763,45 +763,64 @@
         </div>
 
         <div class="section-title">Environmental Conditions</div>
+        <p style="font-size:0.72rem;color:#64748b;margin-bottom:12px;">Enter current weather and historical consumption data. Values are normalized to 0–1 scale for the model.</p>
         <div class="grid">
 
           <div class="field">
             <div class="field-header">
-              <label>Temperature</label>
+              <label>Temperature (°C)</label>
               <span class="val-badge" id="temp-val">{{ request.form.get('temperature', '0.50') }}</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+              <span style="font-size:0.68rem;color:#475569;">15°C</span>
+              <div style="flex:1;text-align:center;font-size:0.68rem;color:#64748b;">25°C</div>
+              <span style="font-size:0.68rem;color:#475569;">35°C</span>
             </div>
             <input type="range" min="0" max="1" step="0.01" aria-label="Temperature slider"
               value="{{ request.form.get('temperature', '0.50') }}"
-              oninput="document.getElementById('temp-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('temperature').value=this.value"/>
-            <input class="slider-input" type="number" id="temperature" name="temperature" step="any" min="0" max="1" title="Temperature (0–1)" placeholder="e.g. 0.47"
+              oninput="document.getElementById('temp-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('temperature').value=this.value; document.getElementById('temp-celsius').textContent=(15 + this.value * 20).toFixed(1)"/>
+            <input class="slider-input" type="number" id="temperature" name="temperature" step="any" min="0" max="1" title="Temperature normalized (0=15°C, 1=35°C)" placeholder="e.g. 0.50"
               value="{{ request.form.get('temperature', '0.50') }}" required
-              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('temp-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+              oninput="this.previousElementSibling.value=this.value; document.getElementById('temp-val').textContent=parseFloat(this.value||0).toFixed(2); document.getElementById('temp-celsius').textContent=(15 + (this.value||0) * 20).toFixed(1)"/>
+            <div style="font-size:0.7rem;color:#38bdf8;margin-top:4px;">≈ <span id="temp-celsius">{{ (15 + (request.form.get('temperature', '0.50')|float) * 20)|round(1) }}</span>°C</div>
           </div>
 
           <div class="field">
             <div class="field-header">
-              <label>Humidity</label>
+              <label>Humidity (%)</label>
               <span class="val-badge" id="hum-val">{{ request.form.get('humidity', '0.50') }}</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+              <span style="font-size:0.68rem;color:#475569;">30%</span>
+              <div style="flex:1;text-align:center;font-size:0.68rem;color:#64748b;">65%</div>
+              <span style="font-size:0.68rem;color:#475569;">100%</span>
             </div>
             <input type="range" min="0" max="1" step="0.01" aria-label="Humidity slider"
               value="{{ request.form.get('humidity', '0.50') }}"
-              oninput="document.getElementById('hum-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('humidity').value=this.value"/>
-            <input class="slider-input" type="number" id="humidity" name="humidity" step="any" min="0" max="1" title="Humidity (0–1)" placeholder="e.g. 0.40"
+              oninput="document.getElementById('hum-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('humidity').value=this.value; document.getElementById('hum-percent').textContent=(30 + this.value * 70).toFixed(0)"/>
+            <input class="slider-input" type="number" id="humidity" name="humidity" step="any" min="0" max="1" title="Humidity normalized (0=30%, 1=100%)" placeholder="e.g. 0.50"
               value="{{ request.form.get('humidity', '0.50') }}" required
-              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('hum-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+              oninput="this.previousElementSibling.value=this.value; document.getElementById('hum-val').textContent=parseFloat(this.value||0).toFixed(2); document.getElementById('hum-percent').textContent=(30 + (this.value||0) * 70).toFixed(0)"/>
+            <div style="font-size:0.7rem;color:#38bdf8;margin-top:4px;">≈ <span id="hum-percent">{{ (30 + (request.form.get('humidity', '0.50')|float) * 70)|round(0)|int }}</span>%</div>
           </div>
 
           <div class="field">
             <div class="field-header">
-              <label>Wind Speed</label>
+              <label>Wind Speed (km/h)</label>
               <span class="val-badge" id="wind-val">{{ request.form.get('wind_speed', '0.50') }}</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+              <span style="font-size:0.68rem;color:#475569;">0</span>
+              <div style="flex:1;text-align:center;font-size:0.68rem;color:#64748b;">15 km/h</div>
+              <span style="font-size:0.68rem;color:#475569;">30</span>
             </div>
             <input type="range" min="0" max="1" step="0.01" aria-label="Wind Speed slider"
               value="{{ request.form.get('wind_speed', '0.50') }}"
-              oninput="document.getElementById('wind-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('wind_speed').value=this.value"/>
-            <input class="slider-input" type="number" id="wind_speed" name="wind_speed" step="any" min="0" max="1" title="Wind Speed (0–1)" placeholder="e.g. 0.45"
+              oninput="document.getElementById('wind-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('wind_speed').value=this.value; document.getElementById('wind-kmh').textContent=(this.value * 30).toFixed(1)"/>
+            <input class="slider-input" type="number" id="wind_speed" name="wind_speed" step="any" min="0" max="1" title="Wind Speed normalized (0=0 km/h, 1=30 km/h)" placeholder="e.g. 0.50"
               value="{{ request.form.get('wind_speed', '0.50') }}" required
-              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('wind-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+              oninput="this.previousElementSibling.value=this.value; document.getElementById('wind-val').textContent=parseFloat(this.value||0).toFixed(2); document.getElementById('wind-kmh').textContent=((this.value||0) * 30).toFixed(1)"/>
+            <div style="font-size:0.7rem;color:#38bdf8;margin-top:4px;">≈ <span id="wind-kmh">{{ ((request.form.get('wind_speed', '0.50')|float) * 30)|round(1) }}</span> km/h</div>
           </div>
 
           <div class="field">
@@ -809,12 +828,18 @@
               <label>Avg Past Consumption</label>
               <span class="val-badge" id="apc-val">{{ request.form.get('avg_past_consumption', '0.50') }}</span>
             </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+              <span style="font-size:0.68rem;color:#475569;">Low</span>
+              <div style="flex:1;text-align:center;font-size:0.68rem;color:#64748b;">Medium</div>
+              <span style="font-size:0.68rem;color:#475569;">High</span>
+            </div>
             <input type="range" min="0" max="1" step="0.01" aria-label="Avg Past Consumption slider"
               value="{{ request.form.get('avg_past_consumption', '0.50') }}"
-              oninput="document.getElementById('apc-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('avg_past_consumption').value=this.value"/>
-            <input class="slider-input" type="number" id="avg_past_consumption" name="avg_past_consumption" step="any" min="0" max="1" title="Avg Past Consumption (0–1)" placeholder="e.g. 0.69"
+              oninput="document.getElementById('apc-val').textContent=parseFloat(this.value).toFixed(2); document.getElementById('avg_past_consumption').value=this.value; document.getElementById('apc-kwh').textContent=(this.value * 2).toFixed(2)"/>
+            <input class="slider-input" type="number" id="avg_past_consumption" name="avg_past_consumption" step="any" min="0" max="1" title="Avg Past Consumption (24h rolling average)" placeholder="e.g. 0.50"
               value="{{ request.form.get('avg_past_consumption', '0.50') }}" required
-              oninput="this.previousElementSibling.previousElementSibling.value=this.value; document.getElementById('apc-val').textContent=parseFloat(this.value||0).toFixed(2)"/>
+              oninput="this.previousElementSibling.value=this.value; document.getElementById('apc-val').textContent=parseFloat(this.value||0).toFixed(2); document.getElementById('apc-kwh').textContent=((this.value||0) * 2).toFixed(2)"/>
+            <div style="font-size:0.7rem;color:#38bdf8;margin-top:4px;">≈ <span id="apc-kwh">{{ ((request.form.get('avg_past_consumption', '0.50')|float) * 2)|round(2) }}</span> kWh/slot (24h avg)</div>
           </div>
 
         </div>
