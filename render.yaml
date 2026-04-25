@@ -3,5 +3,6 @@ services:
     name: smartmeter-forecast
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --timeout 120 --workers 1 --threads 2 --log-level info
     plan: free
+    healthCheckPath: /

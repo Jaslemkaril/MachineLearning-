@@ -14,7 +14,9 @@ app = Flask(__name__)
 # ── Model ────────────────────────────────────────────────────────────────────
 try:
     model = joblib.load("electricity_model.pkl")
+    print(f"Model loaded: {type(model).__name__}")
 except Exception as e:
+    print(f"FATAL: Could not load electricity_model.pkl: {e}")
     raise RuntimeError(f"Could not load electricity_model.pkl: {e}")
 
 APPLIANCE_COLS = [
@@ -88,7 +90,8 @@ def _load_stats() -> dict:
     """Load pre-computed stats from stats_cache.json (instant startup)."""
     if STATS_CACHE_FILE.exists():
         try:
-            return json.loads(STATS_CACHE_FILE.read_text(encoding="utf-8"))
+            with open(STATS_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
         except (json.JSONDecodeError, OSError) as e:
             print(f"Warning: Could not load stats cache: {e}")
     # Fallback if cache missing
@@ -99,7 +102,17 @@ def _load_stats() -> dict:
         "top_rooms": [], "error": "Stats cache not found",
     }
 
-stats: dict = _load_stats()
+try:
+    stats: dict = _load_stats()
+    print(f"Stats loaded: MAE={stats.get('mae')}, R²={stats.get('r2')}")
+except Exception as e:
+    print(f"ERROR loading stats: {e}")
+    stats = {
+        "mae": "Error", "rmse": "Error", "r2": "Error", "cv": "Error",
+        "importances": [], "chart": None,
+        "model_type": type(model).__name__,
+        "top_rooms": [], "error": str(e),
+    }
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -194,6 +207,12 @@ def validate_form(form) -> tuple:
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+@app.route("/health")
+def health():
+    """Health check endpoint for Render"""
+    return {"status": "ok", "model": type(model).__name__, "stats_loaded": "mae" in stats}
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     global prediction_history
