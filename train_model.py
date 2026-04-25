@@ -77,7 +77,7 @@ for f, c in zip(FEATURE_COLS, lr.coef_):
     print(f"  {f}: {c:.4f}")
 
 # ── Random Forest ────────────────────────────────────────────────────────────
-rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+rf = RandomForestRegressor(n_estimators=30, max_depth=15, random_state=42, n_jobs=-1)
 rf.fit(X_train, y_train)
 rf_pred = rf.predict(X_test)
 
