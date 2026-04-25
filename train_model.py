@@ -9,105 +9,115 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import cross_val_score
 
-# Load dataset
+# ── Load & feature-engineer ──────────────────────────────────────────────────
 df = pd.read_csv("smart_meter_data.csv")
+df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
-# Convert timestamp
-df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+df["Hour"]      = df["Timestamp"].dt.hour
+df["Day"]       = df["Timestamp"].dt.day
+df["Month"]     = df["Timestamp"].dt.month
+df["IsWeekend"] = df["Timestamp"].dt.dayofweek.isin([5, 6]).astype(int)
+df["Season"]    = df["Month"].map({12:0,1:0,2:0, 3:1,4:1,5:1,
+                                    6:2,7:2,8:2, 9:3,10:3,11:3})
+df["TimeOfDay"] = pd.cut(df["Hour"], bins=[-1,5,11,17,23],
+                          labels=[0,1,2,3]).astype(int)
+df["Is_Anomaly"] = (df["Anomaly_Label"] != "Normal").astype(int)
 
-# Extract time features
-df['Hour'] = df['Timestamp'].dt.hour
-df['Day'] = df['Timestamp'].dt.day
-df['Month'] = df['Timestamp'].dt.month
+# Encode categorical room fields
+df["Dorm_Enc"]     = df["Dorm_ID"].map({"Dorm A": 0, "Dorm B": 1, "Dorm C": 2})
+df["Room_Enc"]     = df["Room_ID"].str.extract(r"(\d+)").astype(int) - 101
+df["RoomSize_Enc"] = df["Room_Size_Cat"].map({"Small": 0, "Medium": 1, "Large": 2})
 
-# Additional engineered features
-df['IsWeekend']  = df['Timestamp'].dt.dayofweek.isin([5, 6]).astype(int)
-df['Season']     = df['Month'].map({12:0,1:0,2:0, 3:1,4:1,5:1,
-                                     6:2,7:2,8:2, 9:3,10:3,11:3})
-df['TimeOfDay']  = pd.cut(df['Hour'], bins=[-1,5,11,17,23],
-                           labels=[0,1,2,3]).astype(int)
+APPLIANCE_COLS = [
+    "App_Electric_Fan", "App_Air_Conditioner", "App_Laptop_PC",
+    "App_Refrigerator", "App_TV_Monitor", "App_Phone_Charger",
+    "App_Electric_Kettle", "App_Rice_Cooker", "App_Study_Lamp",
+]
 
-# Encode Anomaly_Label
-df['Is_Anomaly'] = (df['Anomaly_Label'] != 'Normal').astype(int)
+FEATURE_COLS = [
+    # Environmental
+    "Temperature", "Humidity", "Wind_Speed", "Avg_Past_Consumption",
+    # Time
+    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay",
+    # Anomaly flag
+    "Is_Anomaly",
+    # Room details
+    "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
+    # Appliances
+    *APPLIANCE_COLS,
+    # Actual appliance load
+    "Appliance_kWh_Active",
+]
 
-# Synthetic Dorm_ID and Room_ID (3 dorms, 8 rooms each)
-np.random.seed(42)
-df['Dorm_ID'] = np.random.randint(0, 3, size=len(df))
-df['Room_ID'] = np.random.randint(0, 8, size=len(df))
-
-# Define features and target
-feature_cols = ['Temperature', 'Humidity', 'Wind_Speed', 'Avg_Past_Consumption',
-                'Hour', 'Day', 'Month', 'IsWeekend', 'Season', 'TimeOfDay', 'Is_Anomaly',
-                'Dorm_ID', 'Room_ID']
-X = df[feature_cols]
-y = df['Electricity_Consumed']
-
-# Time-based split (correct for forecasting)
 df = df.sort_values("Timestamp")
+X = df[FEATURE_COLS]
+y = df["Electricity_Consumed"]
+
 train_size = int(len(df) * 0.7)
-train = df[:train_size]
-test  = df[train_size:]
+X_train, y_train = X.iloc[:train_size], y.iloc[:train_size]
+X_test,  y_test  = X.iloc[train_size:], y.iloc[train_size:]
 
-X_train = train[feature_cols]
-y_train = train["Electricity_Consumed"]
-X_test  = test[feature_cols]
-y_test  = test["Electricity_Consumed"]
-
-# ── Multiple Linear Regression ──────────────────────────────────────────────
+# ── Multiple Linear Regression ───────────────────────────────────────────────
 lr = LinearRegression()
 lr.fit(X_train, y_train)
 lr_pred = lr.predict(X_test)
 
 lr_mae  = mean_absolute_error(y_test, lr_pred)
-lr_rmse = np.sqrt(mean_squared_error(y_test, lr_pred))
+lr_rmse = float(np.sqrt(mean_squared_error(y_test, lr_pred)))
 lr_r2   = r2_score(y_test, lr_pred)
-lr_cv   = cross_val_score(lr, X, y, cv=5, scoring='r2').mean()
+lr_cv   = cross_val_score(lr, X, y, cv=5, scoring="r2", n_jobs=-1).mean()
 
 print("=== Multiple Linear Regression ===")
-print("MAE :", lr_mae)
-print("RMSE:", lr_rmse)
-print("R²  :", lr_r2)
-print("CV R²:", lr_cv)
-
-# Feature coefficients
+print(f"MAE : {lr_mae:.4f}")
+print(f"RMSE: {lr_rmse:.4f}")
+print(f"R²  : {lr_r2:.4f}")
+print(f"CV R²: {lr_cv:.4f}")
 print("\nFeature Coefficients:")
-for f, c in zip(feature_cols, lr.coef_):
-    print(f"  {f}: {round(c, 4)}")
+for f, c in zip(FEATURE_COLS, lr.coef_):
+    print(f"  {f}: {c:.4f}")
 
 # ── Random Forest ────────────────────────────────────────────────────────────
-rf = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
+rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
 rf.fit(X_train, y_train)
 rf_pred = rf.predict(X_test)
 
 rf_mae  = mean_absolute_error(y_test, rf_pred)
-rf_rmse = np.sqrt(mean_squared_error(y_test, rf_pred))
+rf_rmse = float(np.sqrt(mean_squared_error(y_test, rf_pred)))
 rf_r2   = r2_score(y_test, rf_pred)
-
-# Save RF model immediately after training (CV skipped — too slow locally)
-joblib.dump(rf, "electricity_model.pkl")
-print("\nRandom Forest model saved to electricity_model.pkl")
+rf_cv   = cross_val_score(rf, X, y, cv=5, scoring="r2", n_jobs=-1).mean()
 
 print("\n=== Random Forest ===")
-print("MAE :", rf_mae)
-print("RMSE:", rf_rmse)
-print("R²  :", rf_r2)
+print(f"MAE : {rf_mae:.4f}")
+print(f"RMSE: {rf_rmse:.4f}")
+print(f"R²  : {rf_r2:.4f}")
+print(f"CV R²: {rf_cv:.4f}")
 
-# ── Cross Validation summary ────────────────────────────────────────────────
+print("\n=== Feature Importances (RF) ===")
+for f, imp in sorted(zip(FEATURE_COLS, rf.feature_importances_),
+                     key=lambda x: x[1], reverse=True):
+    print(f"  {f:<28} {imp:.4f}")
+
+# ── Model comparison ─────────────────────────────────────────────────────────
 print("\n=== Model Comparison ===")
 print(f"{'Metric':<10} {'Linear Reg':>12} {'Random Forest':>14}")
 print(f"{'MAE':<10} {lr_mae:>12.4f} {rf_mae:>14.4f}")
 print(f"{'RMSE':<10} {lr_rmse:>12.4f} {rf_rmse:>14.4f}")
 print(f"{'R²':<10} {lr_r2:>12.4f} {rf_r2:>14.4f}")
+print(f"{'CV R²':<10} {lr_cv:>12.4f} {rf_cv:>14.4f}")
+
+# ── Save model ───────────────────────────────────────────────────────────────
+joblib.dump(rf, "electricity_model.pkl")
+print("\nRandom Forest model saved to electricity_model.pkl")
 
 # ── Plot ─────────────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(14, 4))
 for ax, pred, title in zip(axes, [lr_pred, rf_pred],
-                            ['Linear Regression', 'Random Forest']):
-    ax.plot(y_test.values[:100], label='Actual')
-    ax.plot(pred[:100], label='Predicted', linestyle='--')
-    ax.set_title(f'Actual vs Predicted — {title}')
-    ax.set_xlabel('Sample')
-    ax.set_ylabel('Consumption')
+                            ["Linear Regression", "Random Forest"]):
+    ax.plot(y_test.values[:100], label="Actual")
+    ax.plot(pred[:100], label="Predicted", linestyle="--")
+    ax.set_title(f"Actual vs Predicted — {title}")
+    ax.set_xlabel("Sample")
+    ax.set_ylabel("Consumption")
     ax.legend()
 plt.tight_layout()
 plt.savefig("actual_vs_predicted.png", dpi=150, bbox_inches="tight")

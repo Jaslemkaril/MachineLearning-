@@ -532,26 +532,182 @@
 
     .appliance-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 9px;
       background: #0c1628;
       border: 1px solid #1e293b;
       border-radius: 10px;
       padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .appliance-item:has(input:checked) {
+      border-color: rgba(56,189,248,0.35);
+      background: rgba(56,189,248,0.05);
     }
 
     .appliance-item input[type=checkbox] {
       width: 15px; height: 15px;
       accent-color: #38bdf8;
       flex-shrink: 0;
+      margin-top: 2px;
     }
 
     .appliance-item label {
       font-size: 0.78rem;
       font-weight: 500;
-      color: #64748b;
+      color: #94a3b8;
       text-transform: none;
       letter-spacing: 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-name  { font-weight: 600; color: #e2e8f0; font-size: 0.78rem; }
+    .app-brand { font-size: 0.68rem; color: #64748b; }
+    .app-watts { font-size: 0.65rem; color: #38bdf8; font-weight: 600; }
+
+    /* ── Appliance breakdown in result ──────────────────────── */
+    .app-breakdown {
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    .app-breakdown-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .app-breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .app-bd-item {
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.7rem;
+    }
+
+    .app-bd-item.on {
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2);
+    }
+
+    .app-bd-item.off {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      opacity: 0.45;
+    }
+
+    .app-bd-name  { font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .app-bd-brand { color: #64748b; font-size: 0.63rem; }
+    .app-bd-kwh   { color: #38bdf8; font-weight: 700; font-size: 0.68rem; margin-top: 3px; }
+
+    /* ── Form error banner ───────────────────────────────────── */
+    .form-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .form-error-icon { flex-shrink: 0; font-size: 1rem; }
+
+    /* ── Top Consuming Rooms ─────────────────────────────────── */
+    .top-rooms { display: flex; flex-direction: column; gap: 10px; }
+
+    .top-room-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 160px 52px;
+      align-items: center;
+      gap: 12px;
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: border-color 0.2s;
+    }
+    .top-room-row:hover { border-color: rgba(56,189,248,0.2); }
+
+    .top-room-rank {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-align: center;
+    }
+    .rank-1 { color: #fbbf24; }
+    .rank-2 { color: #94a3b8; }
+    .rank-3 { color: #b45309; }
+    .rank-other { color: #475569; }
+
+    .top-room-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .top-room-bar-wrap {
+      background: #1e293b;
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .top-room-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      min-width: 2px;
+    }
+
+    .top-room-val {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-align: right;
+    }
+
+    /* ── About grid ──────────────────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .about-item {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .about-item-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .about-item-text {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -692,48 +848,68 @@
           </div>
         </div>
 
-        <!-- Room Details — frontend only, data not yet collected -->
-        <div class="coming-soon-section">
-          <div class="section-title">Room Details <span class="coming-soon-tag">Coming Soon</span></div>
-          <div class="grid" style="margin-bottom:16px">
-            <div class="field">
-              <label>Room Size</label>
-              <div class="select-wrap">
-                <select aria-label="Room Size" disabled>
-                  <option>Small (&lt;15 m²)</option>
-                  <option>Medium (15–25 m²)</option>
-                  <option>Large (&gt;25 m²)</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label>Number of Occupants</label>
-              <div class="select-wrap">
-                <select aria-label="Occupants" disabled>
-                  <option>1 person</option>
-                  <option>2 people</option>
-                  <option>3 people</option>
-                  <option>4+ people</option>
-                </select>
-              </div>
+        <div class="section-title">Room Details</div>
+        <div class="grid" style="margin-bottom:16px">
+          <div class="field">
+            <label>Room Size</label>
+            <div class="select-wrap">
+              <select name="room_size_cat" aria-label="Room Size">
+                {% for s in ['Small', 'Medium', 'Large'] %}
+                <option value="{{ s }}" {% if request.form.get('room_size_cat', 'Medium') == s %}selected{% endif %}>
+                  {{ s }} {% if s == 'Small' %}(&lt;15 m²){% elif s == 'Medium' %}(15–25 m²){% else %}(&gt;25 m²){% endif %}
+                </option>
+                {% endfor %}
+              </select>
             </div>
           </div>
-
-          <label style="display:block;margin-bottom:10px;">Appliances in Use</label>
-          <div class="appliance-grid">
-            <div class="appliance-item"><input type="checkbox" disabled><label>Electric Fan</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Air Conditioner</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Laptop / PC</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Refrigerator</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>TV / Monitor</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Phone Charger</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Electric Kettle</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Rice Cooker</label></div>
-            <div class="appliance-item"><input type="checkbox" disabled><label>Study Lamp</label></div>
+          <div class="field">
+            <label>Number of Occupants</label>
+            <div class="select-wrap">
+              <select name="num_occupants" aria-label="Occupants">
+                {% for n in [1,2,3,4] %}
+                <option value="{{ n }}" {% if request.form.get('num_occupants', '1')|int == n %}selected{% endif %}>
+                  {{ n }} person{% if n > 1 %}s{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
         </div>
 
+        <div class="section-title">Appliances in Use</div>
+        <div class="appliance-grid">
+          {% set app_display = [
+            ('App_Electric_Fan',    'Electric Fan',    'Panasonic F-M14D5',          35),
+            ('App_Air_Conditioner', 'Air Conditioner', 'Carrier 53KHCT012-703',     1200),
+            ('App_Laptop_PC',       'Laptop / PC',     'ASUS VivoBook 15 X1502',      65),
+            ('App_Refrigerator',    'Refrigerator',    'Condura CTD-510MNi',         120),
+            ('App_TV_Monitor',      'TV / Monitor',    'Samsung UA32T4500',           40),
+            ('App_Phone_Charger',   'Phone Charger',   'Anker PowerPort III 20W',     20),
+            ('App_Electric_Kettle', 'Electric Kettle', 'Kyowa KW-1270',             1500),
+            ('App_Rice_Cooker',     'Rice Cooker',     'Hanabishi HRC-508',          400),
+            ('App_Study_Lamp',      'Study Lamp',      'Firefly FEL-500',              9),
+          ] %}
+          {% for key, label, brand_model, watts in app_display %}
+          <div class="appliance-item">
+            <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1"
+              {% if request.form.get(key) %}checked{% endif %}>
+            <label for="{{ key }}">
+              <span class="app-name">{{ label }}</span>
+              <span class="app-brand">{{ brand_model }}</span>
+              <span class="app-watts">{{ watts }}W · {{ "%.4f"|format(watts * 0.5 / 1000) }} kWh/slot</span>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+
         <div class="divider"></div>
+
+        {% if form_error %}
+        <div class="form-error" role="alert">
+          <span class="form-error-icon">&#9888;</span> {{ form_error }}
+        </div>
+        {% endif %}
+
         <button type="submit">Predict Consumption</button>
       </form>
 
@@ -773,6 +949,23 @@
           <span class="result-status warn">High Consumption</span>
           {% else %}
           <span class="result-status ok">Normal</span>
+          {% endif %}
+
+          {% if app_kwh_breakdown %}
+          <div class="app-breakdown">
+            <div class="app-breakdown-title">Appliance Breakdown (this 30-min slot)</div>
+            <div class="app-breakdown-grid">
+              {% for a in app_kwh_breakdown %}
+              <div class="app-bd-item {% if a.active %}on{% else %}off{% endif %}">
+                <div class="app-bd-name">{{ a.label }}</div>
+                <div class="app-bd-brand">{{ a.brand }} · {{ a.watts }}W</div>
+                {% if a.active %}
+                <div class="app-bd-kwh">{{ a.kwh }} kWh</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
           {% endif %}
         </div>
       </div>
@@ -836,7 +1029,7 @@
         {% for h in history %}
         <div class="history-row">
           <div class="history-location">{{ h.dorm }}<br>{{ h.room }}</div>
-          <div class="history-meta">Temp {{ h.temp }} &nbsp;&middot;&nbsp; Humidity {{ h.hum }} &nbsp;&middot;&nbsp; Avg Past {{ h.apc }}<br>{{ h.time }}</div>
+          <div class="history-meta">Temp {{ h.temp }} &nbsp;&middot;&nbsp; Humidity {{ h.hum }} &nbsp;&middot;&nbsp; Avg Past {{ h.apc }}<br>{{ h.time }} &nbsp;&middot;&nbsp; {{ h.size }} &nbsp;&middot;&nbsp; {{ h.occ }} occupant{% if h.occ > 1 %}s{% endif %}<br><span style="color:#475569">{{ h.appliances }}</span></div>
           <div class="history-result">
             {{ h.result }}
             {% if h.kwh is defined %}<br><span style="font-size:0.72rem;color:#94a3b8;">{{ h.kwh }} kWh &nbsp;&middot;&nbsp; &#8369;{{ h.cost }}</span>{% endif %}
@@ -876,19 +1069,19 @@
       <div class="about-grid">
         <div class="about-item">
           <div class="about-item-label">Dataset</div>
-          <div class="about-item-text">5,000 smart meter readings at 30-minute intervals across 3 dorms and 24 rooms. Features include temperature, humidity, wind speed, and historical consumption, normalized to a 0&ndash;1 scale.</div>
+          <div class="about-item-text">5,000 smart meter readings at 30-minute intervals across 3 dorms and 24 rooms. Features include temperature, humidity, wind speed, room details, occupancy, and 9 appliances with real brand/wattage data, normalized to a 0&ndash;1 scale.</div>
         </div>
         <div class="about-item">
           <div class="about-item-label">Model</div>
-          <div class="about-item-text">{{ stats.model_type }} trained on 13 features including Dorm ID and Room ID. Time-based 70/30 train-test split preserves temporal integrity.</div>
+          <div class="about-item-text">{{ stats.model_type }} trained on {{ stats.importances|length }} features including real appliance loads. Time-based 70/30 train-test split preserves temporal integrity.</div>
         </div>
         <div class="about-item">
           <div class="about-item-label">Feature Engineering</div>
-          <div class="about-item-text">IsWeekend, Season (0&ndash;3), and TimeOfDay are auto-derived from time inputs. Dorm and Room IDs are label-encoded (Dorm A=0, B=1, C=2; Room 101&ndash;108 &rarr; 0&ndash;7).</div>
+          <div class="about-item-text">IsWeekend, Season (0&ndash;3), and TimeOfDay are auto-derived from time inputs. Appliance_kWh_Active is computed from rated wattage × active flags × 0.5 h. Room size and dorm are label-encoded.</div>
         </div>
         <div class="about-item">
-          <div class="about-item-label">Anomaly Detection</div>
-          <div class="about-item-text">Rule-based: predictions above 0.75 are flagged as High Consumption. Status is shown on every prediction result and in the history log.</div>
+          <div class="about-item-label">Appliance Reference</div>
+          <div class="about-item-text">Fan 35W (Panasonic) · AC 1200W (Carrier) · Laptop 65W (ASUS) · Fridge 120W (Condura) · TV 40W (Samsung) · Charger 20W (Anker) · Kettle 1500W (Kyowa) · Rice Cooker 400W (Hanabishi) · Lamp 9W (Firefly)</div>
         </div>
       </div>
     </div>
