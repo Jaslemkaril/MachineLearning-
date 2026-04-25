@@ -1,0 +1,32 @@
+{
+  "Dorm A": {
+    "Room 1": {"size_m2": 20, "size_cat": "Medium", "occupants": 2},
+    "Room 2": {"size_m2": 15, "size_cat": "Small", "occupants": 3},
+    "Room 3": {"size_m2": 17, "size_cat": "Medium", "occupants": 2},
+    "Room 4": {"size_m2": 32, "size_cat": "Large", "occupants": 3},
+    "Room 5": {"size_m2": 18, "size_cat": "Medium", "occupants": 1},
+    "Room 6": {"size_m2": 32, "size_cat": "Large", "occupants": 3},
+    "Room 7": {"size_m2": 25, "size_cat": "Medium", "occupants": 3},
+    "Room 8": {"size_m2": 15, "size_cat": "Small", "occupants": 1}
+  },
+  "Dorm B": {
+    "Room 1": {"size_m2": 14, "size_cat": "Small", "occupants": 4},
+    "Room 2": {"size_m2": 14, "size_cat": "Small", "occupants": 2},
+    "Room 3": {"size_m2": 12, "size_cat": "Small", "occupants": 1},
+    "Room 4": {"size_m2": 25, "size_cat": "Medium", "occupants": 3},
+    "Room 5": {"size_m2": 19, "size_cat": "Medium", "occupants": 3},
+    "Room 6": {"size_m2": 24, "size_cat": "Medium", "occupants": 2},
+    "Room 7": {"size_m2": 14, "size_cat": "Small", "occupants": 3},
+    "Room 8": {"size_m2": 20, "size_cat": "Medium", "occupants": 3}
+  },
+  "Dorm C": {
+    "Room 1": {"size_m2": 21, "size_cat": "Medium", "occupants": 1},
+    "Room 2": {"size_m2": 22, "size_cat": "Medium", "occupants": 2},
+    "Room 3": {"size_m2": 22, "size_cat": "Medium", "occupants": 2},
+    "Room 4": {"size_m2": 13, "size_cat": "Small", "occupants": 2},
+    "Room 5": {"size_m2": 11, "size_cat": "Small", "occupants": 1},
+    "Room 6": {"size_m2": 15, "size_cat": "Small", "occupants": 1},
+    "Room 7": {"size_m2": 21, "size_cat": "Medium", "occupants": 2},
+    "Room 8": {"size_m2": 20, "size_cat": "Medium", "occupants": 1}
+  }
+}

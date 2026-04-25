@@ -51,9 +51,18 @@ SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
 
 DORMS      = ["Dorm A", "Dorm B", "Dorm C"]
 DORM_MAP   = {d: i for i, d in enumerate(DORMS)}
-ROOMS      = [f"Room {r}" for r in range(1, 25)]  # Room 1–24 (3 dorms × 8 rooms)
-ROOM_MAP   = {r: i for i, r in enumerate(ROOMS)}
+ROOMS      = [f"Room {r}" for r in range(1, 9)]  # 8 rooms per dorm
 SIZE_MAP   = {"Small": 0, "Medium": 1, "Large": 2}
+
+# Load room configuration (size, occupants per room)
+ROOM_CONFIG_FILE = Path("room_config.json")
+try:
+    with open(ROOM_CONFIG_FILE, "r", encoding="utf-8") as f:
+        ROOM_CONFIG = json.load(f)
+    print(f"Room config loaded: {sum(len(rooms) for rooms in ROOM_CONFIG.values())} rooms")
+except Exception as e:
+    print(f"Warning: Could not load room_config.json: {e}")
+    ROOM_CONFIG = {}
 
 ANOMALY_THRESHOLD = 0.75
 KWH_MAX           = 2.0      # normalized 1.0 → 2.0 kWh per 30-min slot
@@ -116,6 +125,14 @@ except Exception as e:
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+def get_room_info(dorm: str, room: str) -> dict:
+    """Get room characteristics from config."""
+    if dorm in ROOM_CONFIG and room in ROOM_CONFIG[dorm]:
+        return ROOM_CONFIG[dorm][room]
+    # Fallback defaults
+    return {"size_m2": 20, "size_cat": "Medium", "occupants": 2}
+
+
 def derive_extra(hour: int, day: int, month: int) -> tuple:
     year = datetime.date.today().year
     try:
@@ -178,18 +195,20 @@ def validate_form(form) -> tuple:
     hour  = _int("hour",  0, 23, "Hour")
     day   = _int("day",   1, 31, "Day")
     month = _int("month", 1, 12, "Month")
-    occ   = _int("num_occupants", 1, 4, "Number of Occupants")
 
     dorm     = form.get("dorm_id", "Dorm A")
-    room     = form.get("room_id", "Room 101")
-    size_cat = form.get("room_size_cat", "Medium")
+    room     = form.get("room_id", "Room 1")
+    room     = form.get("room_id", "Room 1")
 
     if dorm not in DORM_MAP:
         errors.append(f"Invalid dorm: {dorm!r}")
-    if room not in ROOM_MAP:
+    if room not in ROOMS:
         errors.append(f"Invalid room: {room!r}")
-    if size_cat not in SIZE_MAP:
-        errors.append(f"Invalid room size: {size_cat!r}")
+
+    # Get room characteristics from config (auto-filled, not user input)
+    room_info = get_room_info(dorm, room)
+    size_cat = room_info["size_cat"]
+    occ      = room_info["occupants"]
 
     # Appliance flags (checkboxes — absent means 0)
     app_flags = {key: 1 if form.get(key) else 0 for key in APPLIANCE_COLS}
@@ -263,6 +282,10 @@ def index():
             is_weekend, season, tod = derive_extra(hour, day, month)
             app_kwh = compute_appliance_kwh(app_flags, custom_watts)
 
+            # Room encoding: Room 1-8 → 0-7
+            room_num = int(room.split()[1])
+            room_enc = room_num - 1
+
             feature_row = {
                 "Temperature":          temp,
                 "Humidity":             hum,
@@ -276,7 +299,7 @@ def index():
                 "TimeOfDay":            tod,
                 "Is_Anomaly":           0,
                 "Dorm_Enc":             DORM_MAP[dorm],
-                "Room_Enc":             ROOM_MAP[room],
+                "Room_Enc":             room_enc,
                 "RoomSize_Enc":         SIZE_MAP[size_cat],
                 "Num_Occupants":        occ,
                 **app_flags,
@@ -340,6 +363,7 @@ def index():
         appliance_info=APPLIANCE_INFO,
         appliance_cols=APPLIANCE_COLS,
         app_kwh_breakdown=app_kwh_breakdown,
+        room_config=ROOM_CONFIG,
     )
 
 

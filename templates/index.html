@@ -747,9 +747,15 @@
           <div class="field">
             <label>Room</label>
             <div class="select-wrap">
-              <select name="room_id" aria-label="Room">
-                {% for r in range(1, 25) %}
-                <option value="Room {{ r }}" {% if request.form.get('room_id', 'Room 1') == 'Room ' ~ r %}selected{% endif %}>Room {{ r }}</option>
+              <select name="room_id" aria-label="Room" id="room-select">
+                {% for r in range(1, 9) %}
+                <option value="Room {{ r }}" 
+                  data-size-m2="{{ room_config.get(request.form.get('dorm_id', 'Dorm A'), {}).get('Room ' ~ r, {}).get('size_m2', 20) }}"
+                  data-size-cat="{{ room_config.get(request.form.get('dorm_id', 'Dorm A'), {}).get('Room ' ~ r, {}).get('size_cat', 'Medium') }}"
+                  data-occupants="{{ room_config.get(request.form.get('dorm_id', 'Dorm A'), {}).get('Room ' ~ r, {}).get('occupants', 2) }}"
+                  {% if request.form.get('room_id', 'Room 1') == 'Room ' ~ r %}selected{% endif %}>
+                  Room {{ r }} ({{ room_config.get(request.form.get('dorm_id', 'Dorm A'), {}).get('Room ' ~ r, {}).get('size_cat', 'Medium') }}, {{ room_config.get(request.form.get('dorm_id', 'Dorm A'), {}).get('Room ' ~ r, {}).get('size_m2', 20) }} m²)
+                </option>
                 {% endfor %}
               </select>
             </div>
@@ -842,34 +848,6 @@
                 {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
                 {% for i in range(1, 13) %}
                 <option value="{{ i }}" {% if request.form.get('month', '1')|int == i %}selected{% endif %}>{{ months[i-1] }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-title">Room Details</div>
-        <div class="grid" style="margin-bottom:16px">
-          <div class="field">
-            <label>Room Size</label>
-            <div class="select-wrap">
-              <select name="room_size_cat" aria-label="Room Size">
-                {% for s in ['Small', 'Medium', 'Large'] %}
-                <option value="{{ s }}" {% if request.form.get('room_size_cat', 'Medium') == s %}selected{% endif %}>
-                  {{ s }} {% if s == 'Small' %}(&lt;15 m²){% elif s == 'Medium' %}(15–25 m²){% else %}(&gt;25 m²){% endif %}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Number of Occupants</label>
-            <div class="select-wrap">
-              <select name="num_occupants" aria-label="Occupants">
-                {% for n in [1,2,3,4] %}
-                <option value="{{ n }}" {% if request.form.get('num_occupants', '1')|int == n %}selected{% endif %}>
-                  {{ n }} person{% if n > 1 %}s{% endif %}
-                </option>
                 {% endfor %}
               </select>
             </div>
