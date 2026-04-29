@@ -1,0 +1,19 @@
+[
+  {
+    "dorm": "Dorm A",
+    "room": "Room 1",
+    "temp": 0.6,
+    "hum": 0.55,
+    "wind": 0.3,
+    "apc": 0.5,
+    "time": "14:00 · Day 15 · May",
+    "result": 0.087,
+    "status": "Normal",
+    "kwh": 0.174,
+    "cost": 1.83,
+    "occ": 2,
+    "size": "Medium",
+    "appliances": "Electric Fan, Laptop PC, Refrigerator, Study Lamp",
+    "app_kwh": 0.1145
+  }
+]

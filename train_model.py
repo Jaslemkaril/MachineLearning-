@@ -13,6 +13,17 @@ from sklearn.model_selection import cross_val_score
 df = pd.read_csv("smart_meter_data.csv")
 df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 
+# Handle missing values (realistic smart meter data has gaps)
+print("Handling missing values...")
+print(f"Missing values before: {df.isnull().sum().sum()}")
+
+# Fill missing environmental values with forward fill then backward fill
+for col in ['Temperature', 'Humidity', 'Wind_Speed', 'Avg_Past_Consumption']:
+    if col in df.columns:
+        df[col] = df[col].ffill().bfill().fillna(df[col].mean())
+
+print(f"Missing values after: {df.isnull().sum().sum()}")
+
 df["Hour"]      = df["Timestamp"].dt.hour
 df["Day"]       = df["Timestamp"].dt.day
 df["Month"]     = df["Timestamp"].dt.month
