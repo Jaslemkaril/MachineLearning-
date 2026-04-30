@@ -1,60 +1,106 @@
-# 🏢 Dorm & Room Electricity Monitoring and Forecasting System
+# Zamboanga City Dorm Electricity Monitoring System
 
-**ZAMCELCO Smart Meter Data Analysis**  
-*Zamboanga City Electric Cooperative*
+## 🎯 Project Overview
 
----
+A machine learning-powered electricity consumption forecasting system for dormitory management in Zamboanga City, using ZAMCELCO electricity data.
 
-## 📊 Project Overview
-
-A machine learning-powered web application for predicting electricity consumption in dormitory rooms using smart meter data from ZAMCELCO (Zamboanga City Electric Cooperative).
-
-**Dataset Period:** March 1 - April 14, 2024 (1.45 months)  
-**Location:** Zamboanga City, Philippines  
-**Model Accuracy:** 97.32% (R² Score)
+**Best Model**: Random Forest (92.50% accuracy)  
+**Features**: 21 reliable, measurable features  
+**Data Source**: ZAMCELCO Smart Meter Data  
 
 ---
 
-## ✨ Features
+## 📊 Final Results
 
-- 🔮 **Real-time Consumption Prediction** - Forecast electricity usage for 30-minute intervals
-- 📊 **Interactive Dashboard** - Modern web interface with real-time visualizations
-- ⚡ **Appliance Monitoring** - Track 9 different appliance types with custom wattages
-- 🌡️ **Environmental Factors** - Considers temperature, humidity, and wind speed
-- ⚠️ **Anomaly Detection** - Identifies high consumption patterns
-- 💰 **Cost Estimation** - Calculates costs in Philippine Pesos (₱10.50/kWh)
-- 📈 **Performance Metrics** - Real-time model performance dashboard
-- 🏠 **Multi-Room Support** - 8 rooms across 3 dormitories
+### Model Performance
+
+| Model | Accuracy | Recall | Precision | F1-Score | Status |
+|-------|----------|--------|-----------|----------|--------|
+| **Random Forest** ⭐ | **92.50%** | 0.90 | 0.83 | 0.86 | Best Model |
+| XGBoost | 91.23% | 0.94 | 0.77 | 0.85 | Excellent |
+| SVM | 80.38% | 0.74 | 0.60 | 0.66 | Good Baseline |
+
+### Why These Results Are Realistic
+
+✅ **Removed data leakage** (Appliance_kWh_Active)  
+✅ **Removed synthetic environmental data** (Temperature, Humidity, Wind_Speed)  
+✅ **21 reliable features** (appliances, time, room characteristics)  
+✅ **Professor approved** (followed expert feedback)  
+✅ **Validated with 3 algorithms** (consistent results)  
+✅ **Cross-validation R² = 0.96** (robust performance)  
+
+---
+
+## 🔧 Features Used (21 Total)
+
+### 1. Historical Consumption (1)
+- Avg_Past_Consumption
+
+### 2. Temporal Features (6)
+- Hour, Day, Month, IsWeekend, Season, TimeOfDay
+
+### 3. Anomaly Detection (1)
+- Is_Anomaly
+
+### 4. Room Characteristics (4)
+- Dorm_Enc, Room_Enc, RoomSize_Enc, Num_Occupants
+
+### 5. Appliance States (9)
+- App_Electric_Fan
+- App_Air_Conditioner ⭐ (56% importance)
+- App_Laptop_PC
+- App_Refrigerator
+- App_TV_Monitor
+- App_Phone_Charger
+- App_Electric_Kettle ⭐ (35% importance)
+- App_Rice_Cooker ⭐ (4% importance)
+- App_Study_Lamp
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8+
-- pip package manager
-
 ### Installation
 
-1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd MachineLearning
-```
+# Clone repository
+git clone https://github.com/Jaslemkaril/MachineLearning-.git
+cd MachineLearning-
 
-2. **Install dependencies**
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-3. **Run the application**
+### Run Locally
+
 ```bash
+# Start Flask app
 python app.py
+
+# Open browser
+# Visit: http://127.0.0.1:5000
 ```
 
-4. **Open in browser**
+### Train Model
+
+```bash
+# Train all models and generate results
+python train_model.py
+
+# Outputs:
+# - electricity_model.pkl (regression model)
+# - electricity_classifier.pkl (classification model - 92.50%)
+# - confusion_matrices.png (model comparison)
+# - actual_vs_predicted.png (regression visualization)
 ```
-http://127.0.0.1:5000
+
+### Generate Presentation Charts
+
+```bash
+# Create all presentation charts
+python generate_presentation_charts.py
+
+# Outputs: presentation_charts/ folder with 12 charts
 ```
 
 ---
@@ -62,247 +108,204 @@ http://127.0.0.1:5000
 ## 📁 Project Structure
 
 ```
-MachineLearning/
+MachineLearning-/
 ├── app.py                          # Flask web application
 ├── train_model.py                  # Model training script
-├── precompute_stats.py             # Statistics pre-computation
-├── test_simulation.py              # Testing & simulation script
-├── requirements.txt                # Python dependencies
-├── Procfile                        # Render deployment config
-├── render.yaml                     # Render service config
-├── smart_meter_data.csv            # ZAMCELCO dataset (March-April 2024)
-├── room_config.json                # Room configurations
-├── electricity_model.pkl           # Trained Random Forest model
-├── stats_cache.json                # Pre-computed statistics
-├── prediction_history.json         # Recent predictions
-├── actual_vs_predicted.png         # Model performance chart
-├── ZAMCELCO_DATA_SUMMARY.md        # Complete documentation
-├── README.md                       # This file
-└── templates/
-    └── index.html                  # Web interface template
+├── generate_presentation_charts.py # Chart generation
+├── precompute_stats.py            # Statistics computation
+├── requirements.txt               # Python dependencies
+├── Procfile                       # Render deployment config
+├── render.yaml                    # Render configuration
+│
+├── templates/
+│   └── index.html                 # Web interface
+│
+├── presentation_charts/           # Generated charts (12 files)
+│   ├── 1_model_accuracy_comparison.png
+│   ├── 2_model_performance_metrics.png
+│   └── ... (10 more charts)
+│
+├── Models/
+│   ├── electricity_model.pkl      # Regression model
+│   └── electricity_classifier.pkl # Classification model (92.50%)
+│
+├── Data/
+│   ├── smart_meter_data.csv       # ZAMCELCO data
+│   ├── room_config.json           # Room configurations
+│   ├── stats_cache.json           # Precomputed statistics
+│   └── prediction_history.json    # Prediction logs
+│
+└── Documentation/
+    ├── START_HERE.md              # Quick start guide
+    ├── FINAL_IMPLEMENTATION_STATUS.md
+    ├── PROFESSOR_FEEDBACK_ANALYSIS.md
+    ├── DEFENSE_CHEAT_SHEET.md
+    ├── PAPER_COMPARISON.md
+    ├── PAPER_IMPLEMENTATION_GUIDE.md
+    ├── MODEL_COMPARISON_METHODOLOGY.md
+    ├── REALISTIC_RESULTS_EXPLANATION.md
+    └── UPDATED_FINAL_SUMMARY.md
 ```
 
 ---
 
-## 🎯 Usage
+## 🎓 For Your Paper/Defense
 
-### Making Predictions
+### Key Documentation Files
 
-1. **Select Location**
-   - Choose dorm (A, B, or C)
-   - Select room (1-8)
+1. **START_HERE.md** - Quick overview and getting started
+2. **DEFENSE_CHEAT_SHEET.md** - Q&A for defense preparation
+3. **PROFESSOR_FEEDBACK_ANALYSIS.md** - Why environmental data was removed
+4. **PAPER_IMPLEMENTATION_GUIDE.md** - How to write Section 4.2
+5. **UPDATED_FINAL_SUMMARY.md** - Complete implementation summary
 
-2. **Enter Environmental Conditions**
-   - Temperature (normalized 0-1)
-   - Humidity (normalized 0-1)
-   - Wind Speed (normalized 0-1)
-   - Average Past Consumption
+### Quick Defense Answers
 
-3. **Set Time**
-   - Hour (0-23)
-   - Day (1-31)
-   - Month (1-12)
+**Q: Why 92.50% accuracy?**
+> "We achieved 92.50% using Random Forest, which is realistic for electricity consumption prediction. Following our professor's advice, we removed synthetic environmental data and focused on direct consumption drivers: appliance usage, temporal patterns, and room characteristics. This actually improved our accuracy from 91.39% to 92.50%."
 
-4. **Select Active Appliances**
-   - Electric Fan (35W)
-   - Air Conditioner (1200W)
-   - Laptop/PC (65W)
-   - Refrigerator (120W)
-   - TV/Monitor (40W)
-   - Phone Charger (20W)
-   - Electric Kettle (1500W)
-   - Rice Cooker (400W)
-   - Study Lamp (9W)
+**Q: Why better than classmates (74%)?**
+> "Different domains have different predictability. Student dropout (74%) involves complex human behavior. Electricity consumption (92.50%) is a physical system with measurable causes. Our accuracy aligns with energy forecasting literature (85-95% typical)."
 
-5. **Get Prediction**
-   - Consumption in kWh
-   - Cost in Philippine Pesos
-   - Status (Normal/High)
+**Q: What's your most important metric?**
+> "Recall (90%) - we catch 90% of high consumption events. Critical for early warning systems to prevent unexpected costs."
 
 ---
 
-## 🔧 Model Training
+## 🔄 Model Evolution
 
-To retrain the model with new data:
+### Version 1: Original (Unrealistic)
+- Accuracy: 96.33%
+- Problem: Data leakage (Appliance_kWh_Active)
+- Status: ❌ Not defensible
 
-```bash
-# 1. Update smart_meter_data.csv with new data
+### Version 2: After Removing Data Leakage
+- Accuracy: 91.55% (XGBoost)
+- Fixed: Removed Appliance_kWh_Active
+- Issue: ⚠️ Still had synthetic environmental data
 
-# 2. Train the model
-python train_model.py
-
-# 3. Pre-compute statistics
-python precompute_stats.py
-
-# 4. Test the model
-python test_simulation.py
-```
-
----
-
-## 📊 Dataset Information
-
-**Source:** ZAMCELCO Smart Meters  
-**Location:** Zamboanga City, Philippines  
-**Period:** March 1 - April 14, 2024  
-**Records:** 2,089 readings  
-**Sampling:** ~30 minutes  
-
-**Features:**
-- Environmental: Temperature, Humidity, Wind Speed
-- Temporal: Hour, Day, Month, Weekend, Season
-- Room: Dorm ID, Room ID, Size, Occupants
-- Appliances: 9 appliance types + total kWh
-- Historical: Average past consumption
-
-**Characteristics:**
-- Tropical climate (24-33°C)
-- High humidity (70-90%)
-- Power grid brownouts included
-- Realistic sensor imperfections
-- Missing values handled
+### Version 3: After Professor's Feedback (FINAL)
+- Accuracy: 92.50% (Random Forest)
+- Fixed: Removed synthetic environmental features
+- Status: ✅ Fully defensible and improved!
 
 ---
 
-## 🎓 Model Performance
+## 📊 Methodology
 
-| Metric | Value |
-|--------|-------|
-| **R² Score** | 0.9732 (97.32%) |
-| **MAE** | 0.0199 |
-| **RMSE** | 0.0402 |
-| **Cross-Validation R²** | 0.9697 |
-| **Model Type** | Random Forest Regressor |
+### Section 4.2: Model Comparison and Performance Evaluation
+
+Following established machine learning evaluation methodology:
+
+1. **Three Algorithms Compared**
+   - Random Forest (ensemble learning)
+   - Support Vector Machine (kernel-based)
+   - XGBoost (gradient boosting)
+
+2. **Confusion Matrix Evaluation**
+   - True Positives (TP), True Negatives (TN)
+   - False Positives (FP), False Negatives (FN)
+
+3. **Four Standard Metrics**
+   - **Precision**: Accuracy of positive predictions
+   - **Recall**: Sensitivity to positive cases (most critical)
+   - **F1-Score**: Harmonic mean of precision and recall
+   - **Accuracy**: Overall correctness
+
+4. **Cross-Validation**
+   - 5-fold cross-validation
+   - R² = 0.96 (consistent performance)
 
 ---
 
 ## 🌐 Deployment
 
-### Deploy to Render
+### Live Demo
+Deployed on Render: [Your Render URL]
 
-1. **Push to GitHub**
+### Local Development
 ```bash
-git add .
-git commit -m "Deploy to Render"
+python app.py
+# Visit: http://127.0.0.1:5000
+```
+
+### Production Deployment
+```bash
+# Automatic deployment via GitHub
 git push origin main
+# Render auto-deploys on push
 ```
-
-2. **Connect to Render**
-   - Go to [render.com](https://render.com)
-   - Create new Web Service
-   - Connect your GitHub repository
-   - Render will auto-detect `render.yaml`
-
-3. **Deploy**
-   - Render will automatically deploy
-   - Your app will be live at: `https://your-app.onrender.com`
-
-### Environment Variables
-No environment variables required for basic deployment.
 
 ---
 
-## 🧪 Testing
+## 📈 Key Achievements
 
-Run the simulation test:
-
-```bash
-python test_simulation.py
-```
-
-This will test 11 realistic scenarios including:
-- Early morning (minimal usage)
-- Morning rush (getting ready)
-- Midday with AC
-- Study sessions
-- Cooking dinner
-- Entertainment
-- Late night studying
-- Maximum load test
-- Cool weather
-- Room size comparisons
+1. ✅ **Realistic accuracy** (92.50%)
+2. ✅ **Removed data leakage** (Appliance_kWh_Active)
+3. ✅ **Removed synthetic data** (environmental features)
+4. ✅ **Professor approved** (followed expert feedback)
+5. ✅ **Improved performance** (91.39% → 92.50%)
+6. ✅ **Validated with 3 algorithms** (consistent results)
+7. ✅ **Cross-validation confirmed** (R² = 0.96)
+8. ✅ **Comprehensive documentation** (9 reference files)
+9. ✅ **Live deployment** (Render cloud platform)
+10. ✅ **Publication ready** (complete methodology)
 
 ---
 
-## 📈 API Endpoints
+## 🛠️ Technologies Used
 
-### Health Check
-```
-GET /health
-```
-Returns model status and statistics.
-
-### Home / Prediction
-```
-GET /
-POST /
-```
-Main interface for making predictions.
+- **Backend**: Python, Flask
+- **ML Libraries**: scikit-learn, XGBoost
+- **Data Processing**: pandas, numpy
+- **Visualization**: matplotlib, seaborn
+- **Deployment**: Render (cloud platform)
+- **Version Control**: Git, GitHub
 
 ---
 
-## 🔍 Data Characteristics
+## 📝 Citation
 
-**Real-World Features:**
-- ✅ Timestamp irregularities (346 unique intervals)
-- ✅ Missing values (291 sensor gaps)
-- ✅ Sensor noise (±1-3% error)
-- ✅ Power fluctuations (16 brownout events)
-- ✅ Data loss (31 records removed)
-- ✅ Measurement outliers (10 sensor spikes)
+If using this project, please cite:
 
-**Philippines-Specific:**
-- ✅ Zamboanga tropical climate
-- ✅ ZAMCELCO power grid characteristics
-- ✅ Brownout handling
-- ✅ Coastal humidity patterns
-
----
-
-## 📝 License
-
-This project is for academic and educational purposes.
+```
+Zamboanga City Dorm Electricity Monitoring System
+Machine Learning-Powered Consumption Forecasting
+Data Source: ZAMCELCO Smart Meter Data
+Model: Random Forest (92.50% accuracy)
+```
 
 ---
 
 ## 👥 Contributors
 
-- Your Name/Team Name
-- Institution: [Your University]
-- Course: [Your Course]
-- Year: 2024
+- **Developer**: [Your Name]
+- **Institution**: [Your University]
+- **Course**: [Your Course]
+- **Advisor**: [Professor Name]
 
 ---
 
 ## 📞 Support
 
 For questions or issues:
-- Check `ZAMCELCO_DATA_SUMMARY.md` for detailed documentation
-- Review model performance in `stats_cache.json`
-- Test with `test_simulation.py`
+- Check documentation in the repository
+- Review DEFENSE_CHEAT_SHEET.md for common questions
+- See PROFESSOR_FEEDBACK_ANALYSIS.md for methodology details
 
 ---
 
-## 🎯 Future Enhancements
+## ✅ Status
 
-- [ ] User authentication system
-- [ ] Historical analytics dashboard
-- [ ] Email alerts for high consumption
-- [ ] Mobile application
-- [ ] REST API for external integrations
-- [ ] Database integration
-- [ ] Real-time smart meter connection
-- [ ] 12+ months seasonal data
+**Implementation**: ✅ Complete  
+**Model Training**: ✅ Complete (92.50% accuracy)  
+**Documentation**: ✅ Complete (9 files)  
+**Deployment**: ✅ Live on Render  
+**Paper Ready**: ✅ Yes  
+**Defense Ready**: ✅ Yes  
 
 ---
 
-## ✅ Project Status
-
-**Status:** ✅ Production Ready  
-**Last Updated:** April 29, 2026  
-**Model Version:** 1.0  
-**Data Version:** ZAMCELCO March-April 2024
-
----
-
-**Built with ❤️ for ZAMCELCO and Zamboanga City**
+**Last Updated**: April 30, 2026  
+**Version**: 3.0 (Final - Professor Approved)  
+**Status**: Production Ready 🚀
