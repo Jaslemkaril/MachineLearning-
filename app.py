@@ -26,11 +26,13 @@ APPLIANCE_COLS = [
 ]
 
 FEATURE_COLS = [
-    "Temperature", "Humidity", "Wind_Speed", "Avg_Past_Consumption",
+    # Removed environmental features per professor's feedback:
+    # "Temperature", "Humidity", "Wind_Speed" - were synthetic/normalized data
+    "Avg_Past_Consumption",
     "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay", "Is_Anomaly",
     "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
     *APPLIANCE_COLS,
-    "Appliance_kWh_Active",
+    # Removed "Appliance_kWh_Active" - data leakage
 ]
 
 # Appliance catalogue: key → (default_watts, display_label)
@@ -191,9 +193,11 @@ def validate_form(form) -> tuple:
             return None
         return v
 
-    temp  = _float("temperature",          0.0, 1.0, "Temperature")
-    hum   = _float("humidity",             0.0, 1.0, "Humidity")
-    wind  = _float("wind_speed",           0.0, 1.0, "Wind Speed")
+    # Environmental features removed per professor's feedback
+    # temp  = _float("temperature",          0.0, 1.0, "Temperature")
+    # hum   = _float("humidity",             0.0, 1.0, "Humidity")
+    # wind  = _float("wind_speed",           0.0, 1.0, "Wind Speed")
+    
     apc   = _float("avg_past_consumption", 0.0, 1.0, "Avg Past Consumption")
     hour  = _int("hour",  0, 23, "Hour")
     day   = _int("day",   1, 31, "Day")
@@ -232,7 +236,9 @@ def validate_form(form) -> tuple:
         return None, " ".join(errors)
 
     return {
-        "temp": temp, "hum": hum, "wind": wind, "apc": apc,
+        # Environmental features removed
+        # "temp": temp, "hum": hum, "wind": wind,
+        "apc": apc,
         "hour": hour, "day": day, "month": month,
         "dorm": dorm, "room": room,
         "size_cat": size_cat, "occ": occ,
@@ -267,9 +273,11 @@ def index():
         parsed, form_error = validate_form(request.form)
 
         if parsed:
-            temp     = parsed["temp"]
-            hum      = parsed["hum"]
-            wind     = parsed["wind"]
+            # Environmental features removed
+            # temp     = parsed["temp"]
+            # hum      = parsed["hum"]
+            # wind     = parsed["wind"]
+            
             apc      = parsed["apc"]
             hour     = parsed["hour"]
             day      = parsed["day"]
@@ -295,9 +303,10 @@ def index():
             room_info = get_room_info(dorm, room)
 
             feature_row = {
-                "Temperature":          temp,
-                "Humidity":             hum,
-                "Wind_Speed":           wind,
+                # Environmental features removed per professor's feedback
+                # "Temperature":          temp,
+                # "Humidity":             hum,
+                # "Wind_Speed":           wind,
                 "Avg_Past_Consumption": apc,
                 "Hour":                 hour,
                 "Day":                  day,
@@ -311,7 +320,7 @@ def index():
                 "RoomSize_Enc":         SIZE_MAP[size_cat],
                 "Num_Occupants":        occ,
                 **app_flags,
-                "Appliance_kWh_Active": app_kwh,
+                # "Appliance_kWh_Active": app_kwh,  # Removed - data leakage
             }
 
             features_df = pd.DataFrame([feature_row])[FEATURE_COLS]
@@ -337,7 +346,9 @@ def index():
                            for k, v in app_flags.items() if v]
             entry = {
                 "dorm": dorm, "room": room,
-                "temp": temp, "hum": hum, "wind": wind, "apc": apc,
+                # Environmental features removed
+                # "temp": temp, "hum": hum, "wind": wind,
+                "apc": apc,
                 "time": f"{hour:02d}:00 · Day {day} · {months_short[month-1]}",
                 "result": prediction, "status": pred_status,
                 "kwh": pred_kwh, "cost": pred_cost,
