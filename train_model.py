@@ -36,12 +36,10 @@ print(f"Missing values after: {df.isnull().sum().sum()}")
 
 df["Hour"]      = df["Timestamp"].dt.hour
 df["Day"]       = df["Timestamp"].dt.day
-df["Month"]     = df["Timestamp"].dt.month
 df["IsWeekend"] = df["Timestamp"].dt.dayofweek.isin([5, 6]).astype(int)
-df["Season"]    = df["Month"].map({12:0,1:0,2:0, 3:1,4:1,5:1,
-                                    6:2,7:2,8:2, 9:3,10:3,11:3})
 df["TimeOfDay"] = pd.cut(df["Hour"], bins=[-1,5,11,17,23],
                           labels=[0,1,2,3]).astype(int)
+# Month and Season removed: dataset spans only 1.45 months (insufficient for seasonal patterns)
 df["Is_Anomaly"] = (df["Anomaly_Label"] != "Normal").astype(int)
 
 # Encode categorical room fields
@@ -63,8 +61,8 @@ FEATURE_COLS = [
     
     "Avg_Past_Consumption",  # Keep this - it's historical consumption data
     
-    # Time
-    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay",
+    # Time - Month and Season removed: only 1.45 months of data, insufficient for seasonal patterns
+    "Hour", "Day", "IsWeekend", "TimeOfDay",
     # Anomaly flag
     "Is_Anomaly",
     # Room details

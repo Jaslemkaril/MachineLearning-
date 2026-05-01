@@ -1,5 +1,33 @@
 [
   {
+    "dorm": "Dorm B",
+    "room": "Room 3",
+    "apc": 0.6,
+    "time": "20:00 · Day 10 · Mar",
+    "result": 0.9489,
+    "status": "High Consumption",
+    "kwh": 1.8978,
+    "cost": 19.93,
+    "occ": 1,
+    "size": "Small",
+    "appliances": "Air Conditioner, Electric Kettle, Rice Cooker",
+    "app_kwh": 1.55
+  },
+  {
+    "dorm": "Dorm A",
+    "room": "Room 1",
+    "apc": 0.5,
+    "time": "18:00 · Day 15 · Mar",
+    "result": 0.9506,
+    "status": "High Consumption",
+    "kwh": 1.9012,
+    "cost": 19.96,
+    "occ": 2,
+    "size": "Medium",
+    "appliances": "Air Conditioner, Electric Kettle",
+    "app_kwh": 1.35
+  },
+  {
     "dorm": "Dorm A",
     "room": "Room 1",
     "temp": 0.6,

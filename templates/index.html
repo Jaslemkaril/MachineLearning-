@@ -863,17 +863,7 @@
               </select>
             </div>
           </div>
-          <div class="field">
-            <label>Month</label>
-            <div class="select-wrap">
-              <select name="month" aria-label="Month">
-                {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
-                {% for i in range(1, 13) %}
-                <option value="{{ i }}" {% if request.form.get('month', '1')|int == i %}selected{% endif %}>{{ months[i-1] }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
+          <!-- Month field removed: dataset spans only 1.45 months (March-April 2024), insufficient for seasonal patterns -->
         </div>
 
         <div class="section-title">Appliances in Use</div>

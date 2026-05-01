@@ -29,7 +29,8 @@ FEATURE_COLS = [
     # Removed environmental features per professor's feedback:
     # "Temperature", "Humidity", "Wind_Speed" - were synthetic/normalized data
     "Avg_Past_Consumption",
-    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay", "Is_Anomaly",
+    "Hour", "Day", "IsWeekend", "TimeOfDay", "Is_Anomaly",
+    # Month and Season removed: only 1.45 months of data, insufficient for seasonal patterns
     "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
     *APPLIANCE_COLS,
     # Removed "Appliance_kWh_Active" - data leakage
@@ -138,16 +139,17 @@ def get_room_info(dorm: str, room: str) -> dict:
     return {"size_m2": 20, "size_cat": "Medium", "occupants": 2}
 
 
-def derive_extra(hour: int, day: int, month: int) -> tuple:
+def derive_extra(hour: int, day: int) -> tuple:
+    """Derive IsWeekend and TimeOfDay from hour and day."""
     year = datetime.date.today().year
+    month = 3  # Default to March (dataset month)
     try:
         d = datetime.date(year, month, min(day, 28))
         is_weekend = 1 if d.weekday() >= 5 else 0
     except Exception:
         is_weekend = 0
-    season = SEASON_MAP.get(month, 0)
     tod = 0 if hour <= 5 else (1 if hour <= 11 else (2 if hour <= 17 else 3))
-    return is_weekend, season, tod
+    return is_weekend, tod
 
 
 def compute_appliance_kwh(active_flags: dict, custom_watts: dict) -> float:
@@ -201,7 +203,7 @@ def validate_form(form) -> tuple:
     apc   = _float("avg_past_consumption", 0.0, 1.0, "Avg Past Consumption")
     hour  = _int("hour",  0, 23, "Hour")
     day   = _int("day",   1, 31, "Day")
-    month = _int("month", 1, 12, "Month")
+    # Month removed: only 1.45 months in dataset, not meaningful for prediction
 
     dorm     = form.get("dorm_id", "Dorm A")
     room     = form.get("room_id", "Room 1")
@@ -239,7 +241,8 @@ def validate_form(form) -> tuple:
         # Environmental features removed
         # "temp": temp, "hum": hum, "wind": wind,
         "apc": apc,
-        "hour": hour, "day": day, "month": month,
+        "hour": hour, "day": day,
+        # Month removed: only 1.45 months in dataset
         "dorm": dorm, "room": room,
         "size_cat": size_cat, "occ": occ,
         "app_flags": app_flags,
@@ -281,7 +284,7 @@ def index():
             apc      = parsed["apc"]
             hour     = parsed["hour"]
             day      = parsed["day"]
-            month    = parsed["month"]
+            # Month removed: only 1.45 months in dataset
             dorm     = parsed["dorm"]
             room     = parsed["room"]
             size_cat = parsed["size_cat"]
@@ -292,7 +295,7 @@ def index():
             selected_dorm = dorm
             selected_room = room
 
-            is_weekend, season, tod = derive_extra(hour, day, month)
+            is_weekend, tod = derive_extra(hour, day)
             app_kwh = compute_appliance_kwh(app_flags, custom_watts)
 
             # Room encoding: Room 1-8 → 0-7
@@ -310,9 +313,8 @@ def index():
                 "Avg_Past_Consumption": apc,
                 "Hour":                 hour,
                 "Day":                  day,
-                "Month":                month,
+                # Month and Season removed: only 1.45 months of data
                 "IsWeekend":            is_weekend,
-                "Season":               season,
                 "TimeOfDay":            tod,
                 "Is_Anomaly":           0,
                 "Dorm_Enc":             DORM_MAP[dorm],
@@ -342,6 +344,8 @@ def index():
 
             months_short = ["Jan","Feb","Mar","Apr","May","Jun",
                             "Jul","Aug","Sep","Oct","Nov","Dec"]
+            # Use March as default month for display (dataset is March-April)
+            display_month = "Mar"
             active_apps = [k.replace("App_","").replace("_"," ")
                            for k, v in app_flags.items() if v]
             entry = {
@@ -349,7 +353,7 @@ def index():
                 # Environmental features removed
                 # "temp": temp, "hum": hum, "wind": wind,
                 "apc": apc,
-                "time": f"{hour:02d}:00 · Day {day} · {months_short[month-1]}",
+                "time": f"{hour:02d}:00 · Day {day} · {display_month}",
                 "result": prediction, "status": pred_status,
                 "kwh": pred_kwh, "cost": pred_cost,
                 "occ": occ, "size": size_cat,
