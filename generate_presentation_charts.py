@@ -43,9 +43,9 @@ if not os.path.exists('presentation_charts'):
 print("\n[2] Creating Model Accuracy Comparison chart...")
 
 fig, ax = plt.subplots(figsize=(10, 6))
-models = ['Random Forest', 'SVM', 'XGBoost']
-accuracies = [97.32, 74.00, 69.00]  # Your model vs hypothetical others
-colors = ['#2E7D32', '#00838F', '#558B2F']
+models = ['Random Forest', 'XGBoost', 'SVM']
+accuracies = [92.03, 91.23, 80.38]  # Updated with 22-feature model results
+colors = ['#2E7D32', '#558B2F', '#00838F']
 
 bars = ax.bar(models, accuracies, color=colors, edgecolor='black', linewidth=1.5)
 ax.set_ylabel('Accuracy (%)', fontsize=14, fontweight='bold')
