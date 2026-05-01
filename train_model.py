@@ -40,11 +40,12 @@ df["IsWeekend"] = df["Timestamp"].dt.dayofweek.isin([5, 6]).astype(int)
 df["TimeOfDay"] = pd.cut(df["Hour"], bins=[-1,5,11,17,23],
                           labels=[0,1,2,3]).astype(int)
 # Month and Season removed: dataset spans only 1.45 months (insufficient for seasonal patterns)
-df["Is_Anomaly"] = (df["Anomaly_Label"] != "Normal").astype(int)
 
 # Encode categorical room fields
-df["Dorm_Enc"]     = df["Dorm_ID"].map({"Dorm A": 0, "Dorm B": 1, "Dorm C": 2})
-df["Room_Enc"]     = df["Room_ID"].str.extract(r"(\d+)").astype(int) - 101
+df["Dorm_Enc"] = df["Dorm_ID"].map({"Dorm A": 0, "Dorm B": 1, "Dorm C": 2})
+room_num = df["Room_ID"].str.extract(r"(\d+)").astype(int)
+room_num = room_num.where(room_num < 100, room_num - 100)
+df["Room_Enc"] = room_num - 1
 df["RoomSize_Enc"] = df["Room_Size_Cat"].map({"Small": 0, "Medium": 1, "Large": 2})
 
 APPLIANCE_COLS = [
@@ -63,8 +64,6 @@ FEATURE_COLS = [
     
     # Time - Month and Season removed: only 1.45 months of data, insufficient for seasonal patterns
     "Hour", "Day", "IsWeekend", "TimeOfDay",
-    # Anomaly flag
-    "Is_Anomaly",
     # Room details
     "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
     # Appliances

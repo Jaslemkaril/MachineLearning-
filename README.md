@@ -1,6 +1,6 @@
 # Electricity Consumption Prediction System
 
-A machine learning-based system for predicting electricity consumption in dormitory environments using smart meter data.
+A machine learning-based system for predicting electricity consumption in dormitory environments using author-collected estimates.
 
 ## Project Overview
 
@@ -24,7 +24,7 @@ This system uses Random Forest classification to predict electricity consumption
 
 ## Dataset
 
-- **Source**: Synthetic smart meter data based on ZAMCELCO (Zamboanga City Electric Cooperative) parameters
+- **Source**: Author-collected estimates based on real appliance specs, observed dorm usage patterns, and ZAMCELCO rate assumptions
 - **Records**: 2,089 readings
 - **Period**: March 1 - April 14, 2024 (1.45 months)
 - **Coverage**: 8 dormitory rooms across 3 buildings

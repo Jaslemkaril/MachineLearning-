@@ -29,7 +29,7 @@ FEATURE_COLS = [
     # Removed environmental features per professor's feedback:
     # "Temperature", "Humidity", "Wind_Speed" - were synthetic/normalized data
     "Avg_Past_Consumption",
-    "Hour", "Day", "IsWeekend", "TimeOfDay", "Is_Anomaly",
+    "Hour", "Day", "IsWeekend", "TimeOfDay",
     # Month and Season removed: only 1.45 months of data, insufficient for seasonal patterns
     "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
     *APPLIANCE_COLS,
@@ -328,7 +328,6 @@ def index():
                 # Month and Season removed: only 1.45 months of data
                 "IsWeekend":            is_weekend,
                 "TimeOfDay":            tod,
-                "Is_Anomaly":           0,
                 "Dorm_Enc":             DORM_MAP[dorm],
                 "Room_Enc":             room_enc,
                 "RoomSize_Enc":         SIZE_MAP[size_cat],

@@ -25,15 +25,12 @@ APPLIANCE_COLS = [
 ]
 
 FEATURE_COLS = [
-    "Temperature", "Humidity", "Wind_Speed", "Avg_Past_Consumption",
-    "Hour", "Day", "Month", "IsWeekend", "Season", "TimeOfDay", "Is_Anomaly",
+    "Avg_Past_Consumption",
+    "Hour", "Day", "IsWeekend", "TimeOfDay",
     "Dorm_Enc", "Room_Enc", "RoomSize_Enc", "Num_Occupants",
     *APPLIANCE_COLS,
-    "Appliance_kWh_Active",
 ]
 
-SEASON_MAP = {12: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1,
-              6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3}
 DORM_MAP = {"Dorm A": 0, "Dorm B": 1, "Dorm C": 2}
 SIZE_MAP = {"Small": 0, "Medium": 1, "Large": 2}
 
@@ -41,14 +38,13 @@ df = pd.read_csv("smart_meter_data.csv")
 df["Timestamp"] = pd.to_datetime(df["Timestamp"])
 df["Hour"]      = df["Timestamp"].dt.hour
 df["Day"]       = df["Timestamp"].dt.day
-df["Month"]     = df["Timestamp"].dt.month
 df["IsWeekend"] = df["Timestamp"].dt.dayofweek.isin([5, 6]).astype(int)
-df["Season"]    = df["Month"].map(SEASON_MAP)
 df["TimeOfDay"] = pd.cut(df["Hour"], bins=[-1, 5, 11, 17, 23],
                           labels=[0, 1, 2, 3]).astype(int)
-df["Is_Anomaly"]  = (df["Anomaly_Label"] != "Normal").astype(int)
 df["Dorm_Enc"]    = df["Dorm_ID"].map(DORM_MAP)
-df["Room_Enc"]    = df["Room_ID"].str.extract(r"(\d+)").astype(int) - 101
+room_num = df["Room_ID"].str.extract(r"(\d+)").astype(int)
+room_num = room_num.where(room_num < 100, room_num - 100)
+df["Room_Enc"] = room_num - 1
 df["RoomSize_Enc"] = df["Room_Size_Cat"].map(SIZE_MAP)
 df = df.sort_values("Timestamp")
 
@@ -104,8 +100,21 @@ agg = (
       .sort_values("value", ascending=False)
       .head(5)
 )
+def _normalize_room_label(room_id: str) -> str:
+    match = pd.Series([room_id]).str.extract(r"(\d+)").iloc[0, 0]
+    if match is None:
+        return room_id
+    room_num = int(match)
+    if room_num >= 100:
+        room_num -= 100
+    return f"Room {room_num}"
+
 top_rooms = [
-    {"dorm": row.Dorm_ID, "room": row.Room_ID, "value": round(row.value, 4)}
+    {
+        "dorm": row.Dorm_ID,
+        "room": _normalize_room_label(row.Room_ID),
+        "value": round(row.value, 4),
+    }
     for row in agg.itertuples()
 ]
 
