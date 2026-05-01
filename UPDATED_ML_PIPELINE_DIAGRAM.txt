@@ -1,0 +1,189 @@
+===============================================================================
+UPDATED ML PIPELINE ARCHITECTURE DIAGRAM (22 Features)
+===============================================================================
+
+Copy this into your paper and convert to a proper diagram using draw.io or similar
+
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Smart Meter Dataset                              │
+│                   (ZAMCELCO - Zamboanga City)                           │
+│                                                                         │
+│  • 2,089 records (March 1 - April 14, 2024)                           │
+│  • 8 dormitory rooms across 3 buildings                               │
+│  • 30-minute sampling intervals                                       │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Data Preprocessing                               │
+│                                                                         │
+│  • Cleaning: Remove duplicates, validate data types                   │
+│  • Missing Values: Forward fill → Backward fill → Mean imputation     │
+│  • Datetime Conversion: Parse timestamps                              │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Feature Extraction                               │
+│                                                                         │
+│  Temporal Features (4):                                                │
+│    • Hour (0-23)                                                       │
+│    • Day (1-31)                                                        │
+│    • IsWeekend (0/1)                                                   │
+│    • TimeOfDay (0-3: Night/Morning/Afternoon/Evening)                 │
+│                                                                         │
+│  Room Encoding:                                                        │
+│    • Dorm_Enc (0-2)                                                    │
+│    • Room_Enc (0-7)                                                    │
+│    • RoomSize_Enc (0-2: Small/Medium/Large)                           │
+│                                                                         │
+│  ❌ EXCLUDED: Month, Season (insufficient data: 1.45 months)          │
+│  ❌ EXCLUDED: Temperature, Humidity, Wind_Speed (data quality)        │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Final Feature Set (22 Features)                  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │ Temporal (4)                                                    │  │
+│  │  Hour, Day, IsWeekend, TimeOfDay                               │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │ Appliances (9)                                                  │  │
+│  │  Electric Fan, Air Conditioner*, Laptop/PC, Refrigerator,      │  │
+│  │  TV/Monitor, Phone Charger, Electric Kettle*, Rice Cooker*,    │  │
+│  │  Study Lamp                                                     │  │
+│  │  *Top 3 features = 95% importance                              │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │ Room Characteristics (4)                                        │  │
+│  │  Dorm_Enc, Room_Enc, RoomSize_Enc, Num_Occupants              │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │ Historical (1)                                                  │  │
+│  │  Avg_Past_Consumption                                          │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │ Anomaly Detection (1)                                           │  │
+│  │  Is_Anomaly                                                     │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Data Splitting                                   │
+│                                                                         │
+│  Temporal Split (70-30):                                               │
+│    • Training: 70% (1,462 records) - March 1-31                       │
+│    • Testing: 30% (627 records) - April 1-14                          │
+│                                                                         │
+│  Class Imbalance Handling:                                             │
+│    • Balanced class weights                                            │
+│    • Scale_pos_weight (XGBoost)                                        │
+│    • Stratified cross-validation                                       │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Model Training & Comparison                      │
+│                                                                         │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
+│  │  Random Forest   │  │     XGBoost      │  │       SVM        │    │
+│  │                  │  │                  │  │                  │    │
+│  │  Accuracy:       │  │  Accuracy:       │  │  Accuracy:       │    │
+│  │  92.03% ⭐       │  │  91.23%          │  │  80.38%          │    │
+│  │                  │  │                  │  │                  │    │
+│  │  Recall: 0.88    │  │  Recall: 0.94    │  │  Recall: 0.74    │    │
+│  │  Precision: 0.82 │  │  Precision: 0.77 │  │  Precision: 0.60 │    │
+│  │  F1-Score: 0.85  │  │  F1-Score: 0.85  │  │  F1-Score: 0.66  │    │
+│  └──────────────────┘  └──────────────────┘  └──────────────────┘    │
+│                                                                         │
+│  Evaluation Metrics:                                                   │
+│    • Confusion Matrix (TP, TN, FP, FN)                                │
+│    • Precision, Recall, F1-Score                                      │
+│    • 5-Fold Cross-Validation                                          │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Best Model Selection                             │
+│                                                                         │
+│                    🏆 Random Forest Classifier                         │
+│                                                                         │
+│                    • Accuracy: 92.03%                                  │
+│                    • Balanced performance                              │
+│                    • Best precision-recall trade-off                   │
+│                    • Saved as: electricity_classifier.pkl              │
+└────────────────────────────────┬────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Web Application Deployment                       │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │                    Flask Backend (Python)                       │  │
+│  │                                                                 │  │
+│  │  • Load trained model (electricity_classifier.pkl)             │  │
+│  │  • Input validation (22 features)                              │  │
+│  │  • Feature engineering (IsWeekend, TimeOfDay)                  │  │
+│  │  • Prediction inference                                        │  │
+│  │  • Response formatting (kWh, cost, status)                     │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │              Frontend Interface (HTML/CSS/JS)                   │  │
+│  │                                                                 │  │
+│  │  User Inputs:                                                  │  │
+│  │    • Location: Dorm, Room (auto-fills size & occupancy)       │  │
+│  │    • Historical: Avg Past Consumption slider                  │  │
+│  │    • Time: Hour (0-23), Day (1-31) ← NO MONTH                │  │
+│  │    • Appliances: 9 toggle switches with custom wattage        │  │
+│  │                                                                 │  │
+│  │  Outputs:                                                      │  │
+│  │    • Prediction: Normal / High Consumption                     │  │
+│  │    • Estimated kWh per 30-min slot                            │  │
+│  │    • Estimated cost (₱ Philippine Peso)                       │  │
+│  │    • Prediction history (last 5)                              │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐  │
+│  │                    Deployment Platform                          │  │
+│  │                                                                 │  │
+│  │  • Platform: Render (Cloud)                                    │  │
+│  │  • Web Server: Gunicorn                                        │  │
+│  │  • Auto-deployment: GitHub integration                         │  │
+│  │  • Health monitoring: /health endpoint                         │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+===============================================================================
+KEY FEATURES OF UPDATED ARCHITECTURE
+===============================================================================
+
+✅ 22 Features (optimized from 24)
+   - Removed: Month, Season (insufficient data: 1.45 months)
+   - Removed: Temperature, Humidity, Wind_Speed (data quality)
+   - Removed: Appliance_kWh_Active (data leakage)
+
+✅ Improved Accuracy: 91.55% → 92.03%
+   - Random Forest now best model (was XGBoost)
+   - Better precision-recall balance
+
+✅ Simplified User Interface
+   - No month field in web form
+   - Only Hour and Day for temporal input
+   - Cleaner, more intuitive design
+
+✅ Production-Ready Deployment
+   - Deployed on Render cloud platform
+   - Automatic GitHub integration
+   - Health monitoring and auto-restart
+
+===============================================================================

@@ -813,6 +813,20 @@
           </div>
         </div>
 
+        <div class="grid">
+          <div class="field">
+            <label>Number of Occupants</label>
+            <div class="select-wrap">
+              <select name="num_occupants" id="occupants-select" aria-label="Number of Occupants">
+                {% for n in range(1, 5) %}
+                <option value="{{ n }}" {% if request.form.get('num_occupants', '2')|int == n %}selected{% endif %}>{{ n }} occupant{% if n > 1 %}s{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="font-size:0.7rem;color:#64748b;margin-top:4px;">💡 Auto-filled based on room, but you can adjust if needed</div>
+          </div>
+        </div>
+
         <!-- Environmental conditions removed per professor's feedback -->
         <!-- Temperature, Humidity, Wind Speed were synthetic/normalized data -->
         
@@ -1034,6 +1048,27 @@
 
     </div>
   </div>
+
+<script>
+// Auto-fill occupancy when room selection changes
+document.getElementById('room-select').addEventListener('change', function() {
+  const selectedOption = this.options[this.selectedIndex];
+  const occupants = selectedOption.getAttribute('data-occupants');
+  if (occupants) {
+    document.getElementById('occupants-select').value = occupants;
+  }
+});
+
+// Trigger on page load to set initial value
+window.addEventListener('DOMContentLoaded', function() {
+  const roomSelect = document.getElementById('room-select');
+  const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+  const occupants = selectedOption.getAttribute('data-occupants');
+  if (occupants) {
+    document.getElementById('occupants-select').value = occupants;
+  }
+});
+</script>
 
 </body>
 </html>

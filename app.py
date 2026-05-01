@@ -207,17 +207,29 @@ def validate_form(form) -> tuple:
 
     dorm     = form.get("dorm_id", "Dorm A")
     room     = form.get("room_id", "Room 1")
-    room     = form.get("room_id", "Room 1")
 
     if dorm not in DORM_MAP:
         errors.append(f"Invalid dorm: {dorm!r}")
     if room not in ROOMS:
         errors.append(f"Invalid room: {room!r}")
 
-    # Get room characteristics from config (auto-filled, not user input)
+    # Get room characteristics from config (size is auto-filled)
     room_info = get_room_info(dorm, room)
     size_cat = room_info["size_cat"]
-    occ      = room_info["occupants"]
+    
+    # Get occupancy from user input (allows override of default)
+    occ_input = form.get("num_occupants", "").strip()
+    if occ_input:
+        try:
+            occ = int(occ_input)
+            if not (1 <= occ <= 4):
+                errors.append("Number of occupants must be between 1 and 4.")
+                occ = room_info["occupants"]  # Fallback to default
+        except ValueError:
+            errors.append("Number of occupants must be a number.")
+            occ = room_info["occupants"]  # Fallback to default
+    else:
+        occ = room_info["occupants"]  # Use default from config
 
     # Appliance flags (checkboxes — absent means 0)
     app_flags = {key: 1 if form.get(key) else 0 for key in APPLIANCE_COLS}

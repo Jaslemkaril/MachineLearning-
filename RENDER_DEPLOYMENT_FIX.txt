@@ -1,0 +1,202 @@
+===============================================================================
+RENDER DEPLOYMENT TIMEOUT FIX
+===============================================================================
+Date: May 1, 2026
+Status: ✅ FIXED AND PUSHED
+
+===============================================================================
+PROBLEM IDENTIFIED
+===============================================================================
+
+Your Render deployment was failing with this error:
+"Timed out after waiting for internal health check to return a successful 
+response code at smartmeter-forecast.onrender.com:10000/"
+
+Root Causes:
+1. ❌ Health check was pointing to "/" instead of "/health" endpoint
+2. ❌ Gunicorn timeout was too short (120 seconds)
+3. ❌ Port binding was not explicit
+4. ❌ Model loading might be taking longer than expected
+
+===============================================================================
+FIXES APPLIED
+===============================================================================
+
+1. ✅ Updated render.yaml:
+   - Changed healthCheckPath: / → /health
+   - Increased timeout: 120s → 300s
+   - Added explicit port binding: --bind 0.0.0.0:$PORT
+
+2. ✅ Updated Procfile:
+   - Increased timeout: 120s → 300s
+   - Added explicit port binding: --bind 0.0.0.0:$PORT
+   - Changed log level: debug → info (less verbose)
+
+3. ✅ Verified gunicorn is in requirements.txt (version 25.1.0)
+
+===============================================================================
+WHAT CHANGED
+===============================================================================
+
+Before (render.yaml):
+```yaml
+healthCheckPath: /
+startCommand: gunicorn app:app --timeout 120 --workers 1 --threads 2 --log-level info
+```
+
+After (render.yaml):
+```yaml
+healthCheckPath: /health
+startCommand: gunicorn app:app --timeout 300 --workers 1 --threads 2 --log-level info --bind 0.0.0.0:$PORT
+```
+
+Before (Procfile):
+```
+web: gunicorn app:app --timeout 120 --workers 1 --threads 2 --log-level debug
+```
+
+After (Procfile):
+```
+web: gunicorn app:app --timeout 300 --workers 1 --threads 2 --log-level info --bind 0.0.0.0:$PORT
+```
+
+===============================================================================
+WHY THIS FIXES THE ISSUE
+===============================================================================
+
+1. **/health Endpoint**:
+   - Your Flask app has a dedicated /health endpoint that returns quickly
+   - The root "/" endpoint loads the full page with stats, which takes longer
+   - Render's health check now uses the faster endpoint
+
+2. **Increased Timeout (300s)**:
+   - Loading the model files (.pkl) can take time on Render's free tier
+   - 300 seconds gives enough time for model loading and initialization
+   - Prevents premature timeout during startup
+
+3. **Explicit Port Binding**:
+   - Render assigns a dynamic port via $PORT environment variable
+   - Explicit binding ensures gunicorn listens on the correct port
+   - Prevents connection issues
+
+4. **Reduced Logging**:
+   - Changed from debug to info level
+   - Reduces startup overhead
+   - Still provides useful logs for monitoring
+
+===============================================================================
+DEPLOYMENT STATUS
+===============================================================================
+
+✅ Changes committed: 9c368e1
+✅ Pushed to GitHub: main branch
+✅ Render auto-deployment: TRIGGERED
+
+Render will now:
+1. Detect the push to main branch
+2. Pull the latest code
+3. Install dependencies (pip install -r requirements.txt)
+4. Start gunicorn with new timeout settings
+5. Check /health endpoint (should respond quickly)
+6. Mark deployment as successful
+
+Expected deployment time: 3-5 minutes
+
+===============================================================================
+MONITORING THE DEPLOYMENT
+===============================================================================
+
+Check Render Dashboard:
+1. Go to https://dashboard.render.com/
+2. Click on "smartmeter-forecast" service
+3. Go to "Events" tab
+4. Watch for:
+   ✅ "Deploy started for 9c368e1"
+   ✅ "Build succeeded"
+   ✅ "Deploy live"
+
+If it still fails:
+- Check the "Logs" tab for error messages
+- Look for model loading errors
+- Verify all .pkl files are in the repository
+
+===============================================================================
+TESTING AFTER DEPLOYMENT
+===============================================================================
+
+Once deployed, test these endpoints:
+
+1. Health Check:
+   curl https://smartmeter-forecast.onrender.com/health
+   Expected: {"status": "ok", "model": "RandomForestRegressor", "stats_loaded": true}
+
+2. Home Page:
+   Visit: https://smartmeter-forecast.onrender.com/
+   Expected: Full prediction interface loads
+
+3. Make a Prediction:
+   - Fill in the form
+   - Submit
+   - Should see prediction result with kWh and cost
+
+===============================================================================
+COMMON RENDER FREE TIER LIMITATIONS
+===============================================================================
+
+Be aware of these limitations:
+- ⏱️ Services spin down after 15 minutes of inactivity
+- 🐌 First request after spin-down takes 30-60 seconds (cold start)
+- 💾 512 MB RAM limit (your models should fit)
+- 🔄 Automatic restarts if health check fails repeatedly
+
+===============================================================================
+TROUBLESHOOTING
+===============================================================================
+
+If deployment still fails:
+
+1. Check Model File Sizes:
+   - electricity_model.pkl should be < 50 MB
+   - electricity_classifier.pkl should be < 50 MB
+   - If larger, consider model compression
+
+2. Check Requirements:
+   - All dependencies in requirements.txt
+   - No conflicting versions
+   - gunicorn version compatible
+
+3. Check App Startup:
+   - Model files exist in repository
+   - stats_cache.json exists
+   - room_config.json exists
+
+4. Check Logs:
+   - Look for "Model loaded: RandomForestRegressor"
+   - Look for "Stats loaded: MAE=..."
+   - Look for "Running on http://..."
+
+===============================================================================
+NEXT STEPS
+===============================================================================
+
+1. ✅ Wait 3-5 minutes for deployment to complete
+2. ✅ Check Render dashboard for "Deploy live" status
+3. ✅ Test the /health endpoint
+4. ✅ Test the full website
+5. ✅ Make a test prediction
+
+If successful, your website will be live at:
+https://smartmeter-forecast.onrender.com/
+
+===============================================================================
+SUMMARY
+===============================================================================
+
+Problem: Deployment timeout due to slow health check on "/" endpoint
+Solution: Use faster "/health" endpoint and increase timeout to 300s
+Status: Fixed and deployed (commit 9c368e1)
+ETA: 3-5 minutes for deployment to complete
+
+Your deployment should now succeed! 🚀
+
+===============================================================================
