@@ -49,6 +49,35 @@ def _save_room_config(config: dict) -> None:
 ROOM_CONFIG = _load_room_config()
 print(f"Room config loaded: {sum(len(rooms) for rooms in ROOM_CONFIG.values())} rooms")
 
+# ── Custom Appliance configuration ─────────────────────────────────────────────
+CUSTOM_APPLIANCE_FILE = Path("custom_appliances.json")
+
+def _load_custom_appliances() -> dict:
+    try:
+        if CUSTOM_APPLIANCE_FILE.exists():
+            with open(CUSTOM_APPLIANCE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load custom_appliances.json: {e}")
+    return {}
+
+def _save_custom_appliances(config: dict) -> None:
+    with open(CUSTOM_APPLIANCE_FILE, "w", encoding="utf-8") as f:
+        json.dump(config, f, ensure_ascii=False, indent=2)
+
+CUSTOM_APPLIANCES = _load_custom_appliances()
+print(f"Custom appliances loaded: {len(CUSTOM_APPLIANCES)}")
+
+# Merge default and custom appliances
+def get_merged_appliance_info() -> dict:
+    merged = dict(APPLIANCE_INFO)
+    for key, (watts, label) in CUSTOM_APPLIANCES.items():
+        merged[key] = (watts, label)
+    return merged
+
+def get_merged_appliance_cols() -> list:
+    return list(APPLIANCE_COLS) + list(CUSTOM_APPLIANCES.keys())
+
 # ── Prediction history persistence ───────────────────────────────────────────
 HISTORY_FILE = Path("prediction_history.json")
 
@@ -117,11 +146,11 @@ def derive_extra(hour: int, day: int, month: int) -> tuple:
     return is_weekend, tod
 
 
-def compute_appliance_kwh(active_flags: dict, custom_watts: dict) -> float:
+def compute_appliance_kwh(active_flags: dict, custom_watts: dict, appliance_info: dict) -> float:
     """Compute total kWh consumed in a 30-min slot from active appliance flags and custom wattages."""
     total_watts = sum(
-        custom_watts.get(key, APPLIANCE_INFO[key][0])
-        for key in APPLIANCE_COLS
+        custom_watts.get(key, appliance_info[key][0])
+        for key in appliance_info
         if active_flags.get(key, 0)
     )
     return round(total_watts * 0.5 / 1000, 4)   # 30 min = 0.5 h
@@ -192,12 +221,16 @@ def validate_form(form) -> tuple:
     else:
         occ = room_info["occupants"]
 
+    # Get merged appliance columns (default + custom)
+    merged_appliance_cols = get_merged_appliance_cols()
+    merged_appliance_info = get_merged_appliance_info()
+
     # Appliance flags (checkboxes — absent means 0)
-    app_flags = {key: 1 if form.get(key) else 0 for key in APPLIANCE_COLS}
+    app_flags = {key: 1 if form.get(key) else 0 for key in merged_appliance_cols}
 
     # Custom wattage values (optional — defaults to APPLIANCE_INFO if not provided)
     custom_watts = {}
-    for key in APPLIANCE_COLS:
+    for key in merged_appliance_cols:
         watts_key = f"{key}_watts"
         if watts_key in form:
             try:
@@ -209,7 +242,7 @@ def validate_form(form) -> tuple:
 
     # Appliance quantities (1-10 per type)
     app_qty = {}
-    for key in APPLIANCE_COLS:
+    for key in merged_appliance_cols:
         qty_key = f"{key}_qty"
         if qty_key in form:
             try:
@@ -230,6 +263,8 @@ def validate_form(form) -> tuple:
         "app_flags": app_flags,
         "custom_watts": custom_watts,
         "app_qty": app_qty,
+        "merged_appliance_cols": merged_appliance_cols,
+        "merged_appliance_info": merged_appliance_info,
     }, None
 
 
@@ -283,10 +318,48 @@ def add_room():
                            **_template_context(add_success=f"{new_room_key} ({size_cat}, {size_m2} m²) added to {dorm}"))
 
 
+@app.route("/add_appliance", methods=["POST"])
+def add_appliance():
+    """Add a new custom appliance to the system."""
+    global CUSTOM_APPLIANCES
+    name = request.form.get("appliance_name", "").strip()
+    wattage = request.form.get("appliance_wattage", "").strip()
+
+    if not name:
+        return render_template("index.html",
+                               **_template_context(form_error="Appliance name is required."))
+
+    if not wattage:
+        return render_template("index.html",
+                               **_template_context(form_error="Wattage is required."))
+
+    try:
+        watts = int(wattage)
+        if not (1 <= watts <= 10000):
+            return render_template("index.html",
+                                   **_template_context(form_error="Wattage must be between 1 and 10000."))
+    except ValueError:
+        return render_template("index.html",
+                               **_template_context(form_error="Wattage must be a number."))
+
+    # Generate a key for the appliance (sanitize name)
+    key = "App_" + name.replace(" ", "_").replace("-", "_").title()
+
+    # Add to custom appliances
+    CUSTOM_APPLIANCES[key] = (watts, name)
+    _save_custom_appliances(CUSTOM_APPLIANCES)
+
+    return render_template("index.html",
+                           **_template_context(appliance_success=f"{name} ({watts}W) added successfully"))
+
+
 def _template_context(**extra):
     """Build common template context."""
     with _history_lock:
         history_snapshot = list(prediction_history)
+
+    merged_appliance_info = get_merged_appliance_info()
+    merged_appliance_cols = get_merged_appliance_cols()
 
     ctx = {
         "prediction": extra.get("prediction"),
@@ -299,8 +372,8 @@ def _template_context(**extra):
         "history": history_snapshot,
         "top_rooms": stats.get("top_rooms", []),
         "form_error": extra.get("form_error"),
-        "appliance_info": APPLIANCE_INFO,
-        "appliance_cols": APPLIANCE_COLS,
+        "appliance_info": merged_appliance_info,
+        "appliance_cols": merged_appliance_cols,
         "app_kwh_breakdown": extra.get("app_kwh_breakdown", []),
         "room_config": ROOM_CONFIG,
         "room_info": extra.get("room_info"),
@@ -343,12 +416,13 @@ def index():
             app_flags = parsed["app_flags"]
             custom_watts = parsed["custom_watts"]
             app_qty = parsed["app_qty"]
+            merged_appliance_info = parsed["merged_appliance_info"]
 
             selected_dorm = dorm
             selected_room = room
 
             is_weekend, tod = derive_extra(hour, day, month)
-            app_kwh = compute_appliance_kwh(app_flags, custom_watts)
+            app_kwh = compute_appliance_kwh(app_flags, custom_watts, merged_appliance_info)
 
             # Auto-derive average past consumption from history
             apc = get_avg_past_consumption(dorm, room)
@@ -366,6 +440,7 @@ def index():
             num_active = 0
             has_high_power = 0
 
+            # Handle default appliances (have corresponding model features)
             for key in APPLIANCE_COLS:
                 watt_col = f"{key}_W"
                 qty = app_qty.get(key, 1)
@@ -378,6 +453,15 @@ def index():
                         has_high_power = 1
                 else:
                     appliance_watt_features[watt_col] = 0
+
+            # Handle custom appliances (no corresponding model features, but contribute to totals)
+            for key in CUSTOM_APPLIANCES.keys():
+                if app_flags.get(key, 0):
+                    w = custom_watts.get(key, CUSTOM_APPLIANCES[key][0]) * app_qty.get(key, 1)
+                    total_active_wattage += w
+                    num_active += app_qty.get(key, 1)
+                    if w > HIGH_POWER_WATT_THRESHOLD:
+                        has_high_power = 1
 
             # Build feature row matching FEATURE_COLS order
             feature_row = {
@@ -416,13 +500,13 @@ def index():
             # Per-appliance kWh breakdown for the result panel
             app_kwh_breakdown = [
                 {
-                    "label":  APPLIANCE_INFO[key][1],
-                    "watts":  custom_watts.get(key, APPLIANCE_INFO[key][0]),
+                    "label":  merged_appliance_info[key][1],
+                    "watts":  custom_watts.get(key, merged_appliance_info[key][0]),
                     "qty":    app_qty.get(key, 1),
                     "active": app_flags[key],
-                    "kwh":    round(custom_watts.get(key, APPLIANCE_INFO[key][0]) * app_qty.get(key, 1) * 0.5 / 1000, 4) if app_flags[key] else 0,
+                    "kwh":    round(custom_watts.get(key, merged_appliance_info[key][0]) * app_qty.get(key, 1) * 0.5 / 1000, 4) if app_flags[key] else 0,
                 }
-                for key in APPLIANCE_COLS
+                for key in merged_appliance_info
             ]
 
             months_short = ["Jan","Feb","Mar","Apr","May","Jun",
