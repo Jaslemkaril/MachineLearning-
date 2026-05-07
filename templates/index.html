@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Electricity Consumption Prediction System - Dormitory ML Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #060d1f;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 52px 20px 72px;
+      background-image:
+        radial-gradient(ellipse at 8% 8%, rgba(56,189,248,0.09) 0%, transparent 52%),
+        radial-gradient(ellipse at 92% 88%, rgba(99,102,241,0.09) 0%, transparent 52%);
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    /* ── Page header ─────────────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 2.1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8 30%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    .page-header p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-top: 8px;
+      letter-spacing: 0.03em;
+    }
+
+    .header-pills {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .header-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 99px;
+      padding: 4px 14px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56,189,248,0.1);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(56,189,248,0.15);
+    }
+
+    /* ── Grid ────────────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 8px; }
+    .field.full { grid-column: span 2; }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .val-badge {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56,189,248,0.1);
+      border-radius: 6px;
+      padding: 1px 8px;
+      min-width: 42px;
+      text-align: center;
+    }
+
+    /* Slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 99px;
+      background: #1e293b;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      box-shadow: 0 0 8px rgba(56,189,248,0.5);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .slider-input {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 7px 11px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-family: inherit;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .slider-input:focus {
+      outline: none;
+      border-color: rgba(56,189,248,0.5);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+
+    /* ── Select with custom arrow ──────────────────────────── */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #64748b;
+      pointer-events: none;
+    }
+
+    /* Select dropdown for hour/day/month */
+    select {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 9px 34px 9px 12px;
+      color: #e2e8f0;
+      font-size: 0.88rem;
+      font-family: inherit;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: rgba(56,189,248,0.5);
+      box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.05);
+      margin: 20px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.92rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      box-shadow: 0 8px 28px rgba(56,189,248,0.2);
+    }
+
+    button:hover {
+      opacity: 0.88;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(56,189,248,0.32);
+    }
+    button:active { transform: translateY(0); }
+
+    /* ── Result ───────────────────────────────────────────────── */
+    .result {
+      margin-top: 24px;
+      border-radius: 16px;
+      overflow: hidden;
+      animation: slideUp 0.35s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-inner {
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .result-inner.status-ok {
+      background: linear-gradient(135deg, rgba(34,197,94,0.07), rgba(56,189,248,0.07));
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+
+    .result-inner.status-warn {
+      background: linear-gradient(135deg, rgba(239,68,68,0.09), rgba(245,158,11,0.06));
+      border: 1px solid rgba(239,68,68,0.28);
+    }
+
+    .result-location {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .result-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .result-value {
+      font-size: 3.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .result-unit {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-bottom: 14px;
+    }
+
+    .result-kwh-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .result-kwh-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 8px 20px;
+      text-align: center;
+    }
+
+    .result-kwh-box .kwh-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .result-kwh-box .kwh-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .result-kwh-box .kwh-value span {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    /* Gauge bar */
+    .gauge-wrap { margin-bottom: 18px; }
+
+    .gauge-bar-bg {
+      height: 8px;
+      border-radius: 99px;
+      background: #1e293b;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+      transition: width 0.9s cubic-bezier(.4,0,.2,1);
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.63rem;
+      color: #475569;
+    }
+
+    /* Single status badge in result */
+    .result-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 22px;
+      border-radius: 99px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .result-status.ok   { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+    .result-status.warn { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.28); }
+
+    /* ── Metrics grid ─────────────────────────────────────────── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric-box {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 18px 12px 14px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .metric-box:hover { border-color: rgba(56,189,248,0.25); }
+
+    .metric-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 1.45rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .metric-sub {
+      font-size: 0.62rem;
+      color: #475569;
+      margin-top: 5px;
+      line-height: 1.3;
+    }
+
+    /* ── Feature importances ─────────────────────────────────── */
+    .coeff-table { display: flex; flex-direction: column; gap: 9px; }
+
+    .coeff-row {
+      display: grid;
+      grid-template-columns: 155px 1fr 58px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .coeff-name { font-size: 0.77rem; color: #94a3b8; font-weight: 500; }
+
+    .coeff-bar-wrap { background: #1e293b; border-radius: 99px; height: 6px; overflow: hidden; }
+    .coeff-bar { height: 100%; border-radius: 99px; min-width: 2px; }
+    .coeff-val { font-size: 0.75rem; font-weight: 700; text-align: right; }
+    .coeff-val.pos { color: #38bdf8; }
+    .coeff-val.neg { color: #f87171; }
+    .coeff-bar-pos { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+    .coeff-bar-neg { background: #f87171; }
+    .section-title-gap { margin-top: 28px; }
+    .chart-img { width: 100%; border-radius: 10px; margin-top: 10px; }
+
+    /* ── History (card rows) ─────────────────────────────────── */
+    .history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+    .history-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 16px;
+      gap: 14px;
+      flex-wrap: wrap;
+      transition: border-color 0.2s;
+    }
+
+    .history-row:hover { border-color: rgba(56,189,248,0.2); }
+
+    .history-location {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      min-width: 110px;
+      line-height: 1.4;
+    }
+
+    .history-meta {
+      font-size: 0.74rem;
+      color: #64748b;
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .history-result {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .history-status {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .hs-normal  { background: rgba(34,197,94,0.12);  color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+    .hs-anomaly { background: rgba(239,68,68,0.12);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* ── Coming Soon / Room Details ─────────────────────────── */
+    .coming-soon-tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #f59e0b;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 99px;
+      padding: 2px 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    .coming-soon-section { opacity: 0.75; }
+
+    .appliance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .appliance-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .appliance-item:has(input:checked) {
+      border-color: rgba(56,189,248,0.35);
+      background: rgba(56,189,248,0.05);
+    }
+
+    .appliance-item input[type=checkbox] {
+      width: 15px; height: 15px;
+      accent-color: #38bdf8;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .appliance-item label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #94a3b8;
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-name  { font-weight: 600; color: #e2e8f0; font-size: 0.78rem; }
+    .app-brand { font-size: 0.68rem; color: #64748b; }
+    .app-watts { font-size: 0.65rem; color: #38bdf8; font-weight: 600; }
+
+    /* ── Appliance breakdown in result ──────────────────────── */
+    .app-breakdown {
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    .app-breakdown-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .app-breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .app-bd-item {
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.7rem;
+    }
+
+    .app-bd-item.on {
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2);
+    }
+
+    .app-bd-item.off {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      opacity: 0.45;
+    }
+
+    .app-bd-name  { font-weight: 600; color: #e2e8f0; margin-bottom: 2px; }
+    .app-bd-brand { color: #64748b; font-size: 0.63rem; }
+    .app-bd-kwh   { color: #38bdf8; font-weight: 700; font-size: 0.68rem; margin-top: 3px; }
+
+    /* ── Cost Optimization Recommendations ───────────────────── */
+    .recommendations {
+      margin-top: 20px;
+      background: rgba(56,189,248,0.05);
+      border: 1px solid rgba(56,189,248,0.15);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+    }
+
+    .rec-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(15,23,42,0.6);
+      border-radius: 8px;
+      padding: 10px 12px;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .rec-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .rec-text {
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    /* ── Form error banner ───────────────────────────────────── */
+    .form-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .form-error-icon { flex-shrink: 0; font-size: 1rem; }
+
+    /* ── Top Consuming Rooms ─────────────────────────────────── */
+    .top-rooms { display: flex; flex-direction: column; gap: 10px; }
+
+    .top-room-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 160px 52px;
+      align-items: center;
+      gap: 12px;
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: border-color 0.2s;
+    }
+    .top-room-row:hover { border-color: rgba(56,189,248,0.2); }
+
+    .top-room-rank {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-align: center;
+    }
+    .rank-1 { color: #fbbf24; }
+    .rank-2 { color: #94a3b8; }
+    .rank-3 { color: #b45309; }
+    .rank-other { color: #475569; }
+
+    .top-room-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .top-room-bar-wrap {
+      background: #1e293b;
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .top-room-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      min-width: 2px;
+    }
+
+    .top-room-val {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-align: right;
+    }
+
+    /* ── About grid ──────────────────────────────────────────── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .about-item {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .about-item-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .about-item-text {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ── Tabs ────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(56,189,248,0.1);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      box-shadow: none;
+      width: auto;
+    }
+
+    .tab-btn:hover { color: #94a3b8; background: rgba(56,189,248,0.05); transform: none; opacity: 1; box-shadow: none; }
+    .tab-btn.active { color: #38bdf8; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); transform: none; box-shadow: none; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Chart container ──────────────────────────────────────── */
+    .chart-container {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .chart-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .chart-canvas {
+      width: 100% !important;
+      max-height: 250px;
+    }
+
+    /* ── Model comparison table ────────────────────────────────── */
+    .model-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+
+    .model-table th {
+      text-align: left;
+      padding: 10px 12px;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .model-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(30,41,59,0.5);
+      color: #e2e8f0;
+    }
+
+    .model-table tr:hover td { background: rgba(56,189,248,0.03); }
+    .model-table .best { color: #22c55e; font-weight: 700; }
+
+    /* ── Room management ──────────────────────────────────────── */
+    .add-room-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .add-room-form button {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+    }
+
+    .success-banner {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #86efac;
+      margin-bottom: 14px;
+    }
+
+    .room-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .room-chip {
+      background: #0c1628;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.72rem;
+    }
+
+    .room-chip-name { font-weight: 700; color: #e2e8f0; }
+    .room-chip-info { color: #64748b; margin-top: 2px; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .wrap { max-width: 100%; }
+      .grid, .grid-3 { grid-template-columns: 1fr; }
+      .appliance-grid { grid-template-columns: 1fr 1fr; }
+      .app-breakdown-grid { grid-template-columns: 1fr 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .add-room-form { grid-template-columns: 1fr; }
+      .room-list { grid-template-columns: repeat(2, 1fr); }
+      .tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="wrap">
+    <div class="page-header">
+      <h1>Electricity Consumption Prediction<br>& Monitoring System</h1>
+      <p>Zamboanga City (ZAMCELCO) &nbsp;&middot;&nbsp; Machine Learning Powered</p>
+      <div class="header-pills">
+        <span class="header-pill">{{ room_config|length }} Dorms</span>
+        <span class="header-pill">{{ room_config.values()|map('length')|sum }} Rooms</span>
+        <span class="header-pill">{{ stats.model_type }}</span>
+        <span class="header-pill">R² {{ stats.r2 }}</span>
+      </div>
+    </div>
+
+    <!-- ── Tabs ── -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('predict')">Predict</button>
+      <button class="tab-btn" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="tab-btn" onclick="switchTab('rooms')">Manage Rooms</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 1: PREDICTION FORM -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="wrap tab-content active" id="tab-predict">
+    <div class="card">
+      <form method="POST">
+
+        <div class="section-title">Location</div>
+        <div class="grid">
+          <div class="field">
+            <label>Dorm</label>
+            <div class="select-wrap">
+              <select name="dorm_id" id="dorm-select" aria-label="Dorm">
+                {% for d in dorms %}
+                <option value="{{ d }}" {% if request.form.get('dorm_id', 'Dorm A') == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Room</label>
+            <div class="select-wrap">
+              <select name="room_id" aria-label="Room" id="room-select">
+                {% set current_dorm = request.form.get('dorm_id', 'Dorm A') %}
+                {% for rkey, rinfo in room_config.get(current_dorm, {}).items() %}
+                <option value="{{ rkey }}"
+                  data-size-cat="{{ rinfo.size_cat }}"
+                  data-size-m2="{{ rinfo.size_m2 }}"
+                  data-occupants="{{ rinfo.occupants }}"
+                  {% if request.form.get('room_id', 'Room 1') == rkey %}selected{% endif %}>
+                  {{ rkey }} ({{ rinfo.size_cat }}, {{ rinfo.size_m2 }} m²)
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Number of Occupants</label>
+            <div class="select-wrap">
+              <select name="num_occupants" id="occupants-select" aria-label="Number of Occupants">
+                {% for n in range(1, 5) %}
+                <option value="{{ n }}" {% if request.form.get('num_occupants', '2')|int == n %}selected{% endif %}>{{ n }} occupant{% if n > 1 %}s{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div style="font-size:0.68rem;color:#64748b;margin-top:4px;">Auto-filled from room config. Adjust if needed.</div>
+          </div>
+        </div>
+
+        <div class="section-title">Time</div>
+        <div class="grid-3">
+          <div class="field">
+            <label>Hour</label>
+            <div class="select-wrap">
+              <select name="hour" aria-label="Hour">
+                {% for h in range(0, 24) %}
+                <option value="{{ h }}" {% if request.form.get('hour', '12')|int == h %}selected{% endif %}>{{ '%02d:00' % h }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Day</label>
+            <div class="select-wrap">
+              <select name="day" aria-label="Day">
+                {% for d in range(1, 32) %}
+                <option value="{{ d }}" {% if request.form.get('day', '15')|int == d %}selected{% endif %}>Day {{ d }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Month</label>
+            <div class="select-wrap">
+              <select name="month" aria-label="Month">
+                {% set month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] %}
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}" {% if request.form.get('month', '5')|int == m %}selected{% endif %}>{{ month_names[m-1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Appliances in Use</div>
+        <p style="font-size:0.72rem;color:#64748b;margin-bottom:12px;">Toggle appliances, set wattage and quantity (e.g., 2 fans, 3 chargers).</p>
+        <div class="appliance-grid">
+          {% set app_display = [
+            ('App_Electric_Fan',    'Electric Fan',    35,   'Panasonic, Asahi, Standard'),
+            ('App_Air_Conditioner', 'Air Conditioner', 1200, 'Carrier, LG, Daikin'),
+            ('App_Laptop_PC',       'Laptop / PC',     65,   'ASUS, Dell, HP'),
+            ('App_Refrigerator',    'Refrigerator',    120,  'Condura, Samsung, LG'),
+            ('App_TV_Monitor',      'TV / Monitor',    40,   'Samsung, Sony, TCL'),
+            ('App_Phone_Charger',   'Phone Charger',   20,   'Anker, Belkin, Generic'),
+            ('App_Electric_Kettle', 'Electric Kettle', 1500, 'Kyowa, Imarflex'),
+            ('App_Rice_Cooker',     'Rice Cooker',     400,  'Hanabishi, Imarflex'),
+            ('App_Study_Lamp',      'Study Lamp',      9,    'LED desk lamp'),
+          ] %}
+          {% for key, label, default_watts, examples in app_display %}
+          <div class="appliance-item">
+            <input type="checkbox" name="{{ key }}" id="{{ key }}" value="1"
+              {% if request.form.get(key) %}checked{% endif %}>
+            <label for="{{ key }}">
+              <span class="app-name">{{ label }}</span>
+              <span class="app-brand">{{ examples }}</span>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                <input type="number" name="{{ key }}_watts" id="{{ key }}_watts"
+                  value="{{ request.form.get(key + '_watts', default_watts) }}"
+                  min="1" max="5000" step="1"
+                  style="width:58px;padding:3px 6px;font-size:0.7rem;background:#0c1628;border:1px solid #1e293b;border-radius:4px;color:#38bdf8;"
+                  placeholder="{{ default_watts }}">
+                <span style="font-size:0.68rem;color:#64748b;">W</span>
+                <span style="font-size:0.68rem;color:#64748b;margin-left:4px;">&#215;</span>
+                <input type="number" name="{{ key }}_qty" id="{{ key }}_qty"
+                  value="{{ request.form.get(key + '_qty', '1') }}"
+                  min="1" max="10" step="1"
+                  style="width:36px;padding:3px 4px;font-size:0.7rem;background:#0c1628;border:1px solid #1e293b;border-radius:4px;color:#818cf8;text-align:center;">
+              </div>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="divider"></div>
+
+        {% if form_error %}
+        <div class="form-error" role="alert">
+          <span class="form-error-icon">&#9888;</span> {{ form_error }}
+        </div>
+        {% endif %}
+
+        <button type="submit">Predict Consumption</button>
+      </form>
+
+      <!-- ── Prediction Result ── -->
+      {% if prediction is not none %}
+      {% set pval = prediction | float %}
+      {% set is_anomaly = pred_status == 'High Consumption' %}
+
+      <div class="result">
+        <div class="result-inner {% if is_anomaly %}status-warn{% else %}status-ok{% endif %}">
+          <div class="result-location">{{ selected_dorm }} &mdash; {{ selected_room }}</div>
+          <div class="result-label">Predicted Consumption</div>
+          <div class="result-value">{{ prediction }}</div>
+          <div class="result-unit">normalized units (0&ndash;1 scale)</div>
+
+          {% if pred_kwh is not none %}
+          <div class="result-kwh-row">
+            <div class="result-kwh-box">
+              <div class="kwh-label">Per Slot (30 min)</div>
+              <div class="kwh-value">{{ pred_kwh }} <span>kWh</span></div>
+            </div>
+            <div class="result-kwh-box">
+              <div class="kwh-label">Slot Cost</div>
+              <div class="kwh-value">&#8369;{{ pred_cost }}</div>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if monthly_kwh is not none %}
+          <div style="margin-top:14px;background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:16px;">
+            <div style="font-size:0.65rem;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;text-align:center;">Monthly Estimate (ML-based, 30 days)</div>
+            <div class="result-kwh-row">
+              <div class="result-kwh-box">
+                <div class="kwh-label">Monthly kWh</div>
+                <div class="kwh-value" style="color:#818cf8;">{{ monthly_kwh }} <span>kWh</span></div>
+              </div>
+              <div class="result-kwh-box">
+                <div class="kwh-label">Monthly Cost</div>
+                <div class="kwh-value" style="color:#818cf8;">&#8369;{{ monthly_cost }}</div>
+              </div>
+            </div>
+            <div style="font-size:0.63rem;color:#64748b;text-align:center;margin-top:6px;">Based on model predictions across all 24 hours with current appliance setup</div>
+          </div>
+          {% endif %}
+
+          <div class="gauge-wrap">
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill" id="gauge-fill"></div>
+              <script>document.getElementById('gauge-fill').style.width='{{ (pval * 100) | round | int }}%';</script>
+            </div>
+            <div class="gauge-labels"><span>0.0 Low</span><span>0.5 Medium</span><span>1.0 High</span></div>
+          </div>
+
+          {% if is_anomaly %}
+          <span class="result-status warn">High Consumption</span>
+          {% else %}
+          <span class="result-status ok">Normal</span>
+          {% endif %}
+
+          <!-- Cost Optimization Recommendations -->
+          <div class="recommendations">
+            <div class="rec-title">Cost Optimization Tips</div>
+            <div class="rec-list">
+              {% if app_kwh_breakdown %}
+                {% set high_power = [] %}
+                {% for a in app_kwh_breakdown %}
+                  {% if a.active and a.watts > 500 %}
+                    {% set _ = high_power.append(a) %}
+                  {% endif %}
+                {% endfor %}
+                {% if high_power %}
+                  <div class="rec-item">
+                    <span class="rec-icon">&#9889;</span>
+                    <span class="rec-text">High-power appliances active:
+                      {% for a in high_power %}{{ a.label }}{% if not loop.last %}, {% endif %}{% endfor %}.
+                      Consider off-peak hours (10 PM - 6 AM).</span>
+                  </div>
+                {% endif %}
+                {% if prediction > 0.6 %}
+                  <div class="rec-item">
+                    <span class="rec-icon">&#128200;</span>
+                    <span class="rec-text">Predicted {{ (prediction * 100)|round|int }}% of max.
+                      Reducing usage by 20% could save ~&#8369;{{ ((pred_cost * 0.2)|round(2)) }}/slot.</span>
+                  </div>
+                {% endif %}
+                {% if selected_room and occ %}
+                  <div class="rec-item">
+                    <span class="rec-icon">&#128101;</span>
+                    <span class="rec-text">{{ occ }} occupant{% if occ > 1 %}s{% endif %} in room.
+                      Coordinate usage to avoid simultaneous high-power loads.</span>
+                  </div>
+                {% endif %}
+              {% else %}
+                <div class="rec-item">
+                  <span class="rec-icon">&#128161;</span>
+                  <span class="rec-text">Turn off unused appliances to reduce standby power.</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if app_kwh_breakdown %}
+          <div class="app-breakdown">
+            <div class="app-breakdown-title">Appliance Breakdown (30-min slot)</div>
+            <div class="app-breakdown-grid">
+              {% for a in app_kwh_breakdown %}
+              <div class="app-bd-item {% if a.active %}on{% else %}off{% endif %}">
+                <div class="app-bd-name">{{ a.label }}{% if a.qty > 1 %} &times;{{ a.qty }}{% endif %}</div>
+                <div class="app-bd-brand">{{ a.watts }}W{% if a.qty > 1 %} each{% endif %}</div>
+                {% if a.active %}
+                <div class="app-bd-kwh">{{ a.kwh }} kWh</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 2: DASHBOARD -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="wrap tab-content" id="tab-dashboard">
+
+    <!-- Model Metrics -->
+    <div class="card">
+      <div class="section-title">Model Performance (Random Forest vs Linear Regression)</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">MAE</div>
+          <div class="metric-value">{{ stats.mae }}</div>
+          <div class="metric-sub">Mean Absolute Error</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">RMSE</div>
+          <div class="metric-value">{{ stats.rmse }}</div>
+          <div class="metric-sub">Root Mean Sq Error</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">R&sup2;</div>
+          <div class="metric-value">{{ stats.r2 }}</div>
+          <div class="metric-sub">Coefficient of Determination</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">CV R&sup2;</div>
+          <div class="metric-value">{{ stats.cv }}</div>
+          <div class="metric-sub">5-Fold Cross Validation</div>
+        </div>
+      </div>
+
+      <!-- Model Comparison Table -->
+      <div style="margin-top:20px;">
+        <table class="model-table">
+          <thead>
+            <tr><th>Metric</th><th>Linear Regression (Baseline)</th><th>Random Forest (Primary)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MAE</td>
+              <td>{{ stats.lr_mae | default('N/A') }}</td>
+              <td class="best">{{ stats.mae }}</td>
+            </tr>
+            <tr>
+              <td>RMSE</td>
+              <td>{{ stats.lr_rmse | default('N/A') }}</td>
+              <td class="best">{{ stats.rmse }}</td>
+            </tr>
+            <tr>
+              <td>R&sup2;</td>
+              <td>{{ stats.lr_r2 | default('N/A') }}</td>
+              <td class="best">{{ stats.r2 }}</td>
+            </tr>
+            <tr>
+              <td>CV R&sup2;</td>
+              <td>{{ stats.lr_cv | default('N/A') }}</td>
+              <td class="best">{{ stats.cv }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dataset Info -->
+    {% if stats.dataset_info %}
+    <div class="card">
+      <div class="section-title">Dataset Information</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">Records</div>
+          <div class="metric-value">{{ stats.dataset_info.records | default(0) }}</div>
+          <div class="metric-sub">Total data points</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Months</div>
+          <div class="metric-value">{{ stats.dataset_info.months | default(0) }}</div>
+          <div class="metric-sub">Temporal span</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Dorms</div>
+          <div class="metric-value">{{ stats.dataset_info.dorms | default(0) }}</div>
+          <div class="metric-sub">Dormitory buildings</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Rooms</div>
+          <div class="metric-value">{{ stats.dataset_info.rooms | default(0) }}</div>
+          <div class="metric-sub">Unique rooms monitored</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Classification Metrics -->
+    {% if stats.clf_model %}
+    <div class="card">
+      <div class="section-title">Classification Model &mdash; High Consumption Detection ({{ stats.clf_model }})</div>
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label">Accuracy</div>
+          <div class="metric-value">{{ (stats.clf_accuracy * 100)|round(1) }}%</div>
+          <div class="metric-sub">Overall correctness</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Precision</div>
+          <div class="metric-value">{{ (stats.clf_precision * 100)|round(1) }}%</div>
+          <div class="metric-sub">True positives / predicted positives</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Recall</div>
+          <div class="metric-value">{{ (stats.clf_recall * 100)|round(1) }}%</div>
+          <div class="metric-sub">True positives / actual positives</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">F1 Score</div>
+          <div class="metric-value">{{ (stats.clf_f1 * 100)|round(1) }}%</div>
+          <div class="metric-sub">Harmonic mean of P &amp; R</div>
+        </div>
+      </div>
+
+      {% if stats.clf_confusion_matrix %}
+      <div style="margin-top:16px;">
+        <div class="chart-title">Confusion Matrix</div>
+        <table class="model-table" style="max-width:320px;">
+          <thead>
+            <tr><th></th><th>Predicted Normal</th><th>Predicted High</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700;">Actual Normal</td>
+              <td>{{ stats.clf_confusion_matrix[0][0] }}</td>
+              <td>{{ stats.clf_confusion_matrix[0][1] }}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700;">Actual High</td>
+              <td>{{ stats.clf_confusion_matrix[1][0] }}</td>
+              <td>{{ stats.clf_confusion_matrix[1][1] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Charts -->
+    <div class="card">
+      <div class="section-title">Monthly Electricity Consumption</div>
+      <div class="chart-container">
+        <canvas id="monthlyChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Hourly Consumption Pattern</div>
+      <div class="chart-container">
+        <canvas id="hourlyChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Consumption by Dorm</div>
+      <div class="chart-container">
+        <canvas id="dormChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Actual vs Predicted Chart -->
+    {% if stats.chart %}
+    <div class="card">
+      <div class="section-title">Actual vs Predicted Consumption</div>
+      <img class="chart-img" src="data:image/png;base64,{{ stats.chart }}" alt="Actual vs Predicted">
+    </div>
+    {% endif %}
+
+    <!-- Feature Importances -->
+    <div class="card">
+      <div class="section-title">Feature Importance ({{ stats.model_type }})</div>
+      <div class="coeff-table">
+        {% for item in stats.importances | sort(attribute='coef', reverse=true) %}
+        {% if item.coef > 0.001 %}
+        <div class="coeff-row">
+          <span class="coeff-name">{{ item.feature }}</span>
+          <div class="coeff-bar-wrap">
+            <div class="coeff-bar {{ item.color_class }}" style="width:{{ item.width }}%"></div>
+          </div>
+          <span class="coeff-val pos">{{ item.coef }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Top Consuming Rooms -->
+    {% if top_rooms %}
+    <div class="card">
+      <div class="section-title">Top Consuming Rooms (Average)</div>
+      <div class="top-rooms">
+        {% for tr in top_rooms %}
+        <div class="top-room-row">
+          <span class="top-room-rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% else %}rank-other{% endif %}">
+            #{{ loop.index }}
+          </span>
+          <span class="top-room-name">{{ tr.dorm }} &mdash; {{ tr.room }}</span>
+          <div class="top-room-bar-wrap">
+            <div class="top-room-bar" style="width:{{ (tr.value / (top_rooms[0].value or 1) * 100)|round|int }}%"></div>
+          </div>
+          <span class="top-room-val">{{ tr.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Prediction History -->
+    {% if history %}
+    <div class="card">
+      <div class="section-title">Recent Predictions</div>
+      <div class="history-list">
+        {% for h in history[:10] %}
+        <div class="history-row">
+          <div class="history-location">{{ h.dorm }}<br>{{ h.room }}</div>
+          <div class="history-meta">
+            {{ h.time }}<br>
+            {{ h.size }} &middot; {{ h.occ }} occ &middot; {{ h.appliances }}
+          </div>
+          <div>
+            <span class="history-result">{{ h.result }}</span><br>
+            <span class="history-status {% if h.status == 'High Consumption' %}hs-anomaly{% else %}hs-normal{% endif %}">{{ h.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB 3: MANAGE ROOMS -->
+  <!-- ══════════════════════════════════════════════════════════════════════ -->
+  <div class="wrap tab-content" id="tab-rooms">
+    <div class="card">
+      <div class="section-title">Add a Room</div>
+      <p style="font-size:0.72rem;color:#64748b;margin-bottom:16px;">Add a new room to any dorm by selecting a predefined size category. Appliance types and quantities remain fixed.</p>
+
+      {% if add_success %}
+      <div class="success-banner">&#10003; {{ add_success }}</div>
+      {% endif %}
+
+      <form method="POST" action="/add_room" class="add-room-form">
+        <div class="field">
+          <label>Dorm</label>
+          <div class="select-wrap">
+            <select name="add_dorm" aria-label="Dorm for new room">
+              {% for d in dorms %}
+              <option value="{{ d }}">{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Size Category</label>
+          <div class="select-wrap">
+            <select name="add_size_cat" aria-label="Size category">
+              {% for sc in size_categories %}
+              <option value="{{ sc }}">{{ sc }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <button type="submit">Add Room</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Room Overview per Dorm -->
+    {% for dorm_name, rooms in room_config.items() %}
+    <div class="card">
+      <div class="section-title">{{ dorm_name }} ({{ rooms|length }} rooms)</div>
+      <div class="room-list">
+        {% for rkey, rinfo in rooms.items() %}
+        <div class="room-chip">
+          <div class="room-chip-name">{{ rkey }}</div>
+          <div class="room-chip-info">{{ rinfo.size_cat }} &middot; {{ rinfo.size_m2 }} m² &middot; {{ rinfo.occupants }} occ</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Tab Switching ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+
+  // Initialize charts when dashboard tab is opened
+  if (tab === 'dashboard' && !window._chartsInit) {
+    initCharts();
+    window._chartsInit = true;
+  }
+}
+
+// ── Dynamic Dorm → Room Dropdown ─────────────────────────────────────────────
+const ROOM_CONFIG = {{ room_config | tojson }};
+
+document.getElementById('dorm-select').addEventListener('change', function() {
+  const dorm = this.value;
+  const roomSelect = document.getElementById('room-select');
+  const rooms = ROOM_CONFIG[dorm] || {};
+
+  roomSelect.innerHTML = '';
+  for (const [rkey, rinfo] of Object.entries(rooms)) {
+    const opt = document.createElement('option');
+    opt.value = rkey;
+    opt.textContent = `${rkey} (${rinfo.size_cat}, ${rinfo.size_m2} m²)`;
+    opt.dataset.occupants = rinfo.occupants;
+    opt.dataset.sizeCat = rinfo.size_cat;
+    opt.dataset.sizeM2 = rinfo.size_m2;
+    roomSelect.appendChild(opt);
+  }
+  // Auto-fill occupants for first room
+  updateOccupants();
+});
+
+// ── Auto-fill Occupants ──────────────────────────────────────────────────────
+function updateOccupants() {
+  const roomSelect = document.getElementById('room-select');
+  const opt = roomSelect.options[roomSelect.selectedIndex];
+  if (opt && opt.dataset.occupants) {
+    document.getElementById('occupants-select').value = opt.dataset.occupants;
+  }
+}
+
+document.getElementById('room-select').addEventListener('change', updateOccupants);
+window.addEventListener('DOMContentLoaded', updateOccupants);
+
+// ── Chart.js Initialization ──────────────────────────────────────────────────
+function initCharts() {
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(30,41,59,0.5)' } },
+      y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(30,41,59,0.5)' } }
+    }
+  };
+
+  // Monthly Consumption Chart
+  const monthlyData = {{ stats.monthly_chart | default({}) | tojson }};
+  const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (monthlyData.months && monthlyData.months.length > 0) {
+    new Chart(document.getElementById('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels: monthlyData.months.map(m => monthLabels[m-1]),
+        datasets: [{
+          label: 'Avg Consumption',
+          data: monthlyData.means,
+          backgroundColor: 'rgba(56,189,248,0.6)',
+          borderColor: '#38bdf8',
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, title: { display: false } } }
+    });
+  }
+
+  // Hourly Consumption Chart
+  const hourlyData = {{ stats.hourly_data | default([]) | tojson }};
+  if (hourlyData.length > 0) {
+    new Chart(document.getElementById('hourlyChart'), {
+      type: 'line',
+      data: {
+        labels: Array.from({length: 24}, (_, i) => `${String(i).padStart(2,'0')}:00`),
+        datasets: [{
+          label: 'Avg Consumption',
+          data: hourlyData,
+          borderColor: '#818cf8',
+          backgroundColor: 'rgba(129,140,248,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#818cf8',
+        }]
+      },
+      options: chartDefaults
+    });
+  }
+
+  // Dorm Comparison Chart
+  const dormData = {{ stats.dorm_chart | default({}) | tojson }};
+  if (dormData.dorms && dormData.dorms.length > 0) {
+    new Chart(document.getElementById('dormChart'), {
+      type: 'bar',
+      data: {
+        labels: dormData.dorms,
+        datasets: [{
+          label: 'Avg Consumption',
+          data: dormData.means,
+          backgroundColor: ['rgba(56,189,248,0.6)', 'rgba(129,140,248,0.6)', 'rgba(34,197,94,0.6)'],
+          borderColor: ['#38bdf8', '#818cf8', '#22c55e'],
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: chartDefaults
+    });
+  }
+}
+
+// If prediction was just made, stay on predict tab; otherwise check hash
+{% if prediction is not none %}
+  // Stay on predict tab after form submission
+{% else %}
+  if (window.location.hash === '#dashboard') switchTab('dashboard');
+  if (window.location.hash === '#rooms') switchTab('rooms');
+{% endif %}
+</script>
+
+</body>
+</html>
